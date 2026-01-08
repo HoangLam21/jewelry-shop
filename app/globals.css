@@ -2,10 +2,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
 
-@import "tailwindcss";
-@import "tailwindcss/utilities";
-
-@custom-variant dark (&:where(.dark, .dark *));
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --light-100: #f9f9f9;
@@ -43,81 +42,63 @@
   --foreground: var(--light-100);
 }
 
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary-100);
-  --color-secondary: var(--primary-200);
-  --color-muted: var(--light-400);
-  --color-muted-foreground: var(--dark-450);
-  --color-card: var(--light-100);
-  --color-card-foreground: var(--dark-100);
-}
-
 body {
-  font-family: var(--montserrat-font);
+  font-family: var(--inter-font);
+  @apply bg-background text-foreground;
 }
+
 .jost {
   font-family: var(--jost-font);
 }
 
-@utility bg-light100_dark100 {
-  @apply bg-[#f9f9f9] dark:bg-[#171717];
-}
-
-@utility bg-light200_dark200 {
-  @apply bg-[#f3f3f3] dark:bg-[#1e1e1e];
-}
-
-@utility bg-light300_dark300 {
-  @apply bg-[#eaeaea] dark:bg-[#252525];
-}
-
-@utility bg-light400_dark400 {
-  @apply bg-[#d6d6d6] dark:bg-[#2f2f2f];
-}
-
-@utility bg-light500_dark500 {
-  @apply bg-[#bfbfbf] dark:bg-[#383838];
-}
-
-@utility text-dark100_light100 {
-  @apply text-[#171717] dark:text-[#f9f9f9];
-}
-
-@utility text-dark450_light850 {
-  @apply text-[#383838] dark:text-[#5a5a5a];
-}
-
-@utility text-primary {
-  @apply text-[#617f67];
-}
-
-@utility border-light_dark {
-  @apply border-[#bfbfbf] dark:border-[#2f2f2f];
-}
-
-@utility shadow-light_dark {
-  @apply shadow-[0_2px_8px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_8px_rgba(255,255,255,0.05)];
-}
-
-@layer base {
-  body {
-    @apply bg-background text-foreground;
+@layer utilities {
+  .bg-light100_dark100 {
+    @apply bg-[#f9f9f9] dark:bg-[#171717];
   }
-}
 
-.bg-primary-gradient {
-  background: linear-gradient(
-    129deg,
-    var(--primary-100) 0%,
-    var(--primary-200) 100%
-  );
+  .bg-light200_dark200 {
+    @apply bg-[#f3f3f3] dark:bg-[#1e1e1e];
+  }
+
+  .bg-light300_dark300 {
+    @apply bg-[#eaeaea] dark:bg-[#252525];
+  }
+
+  .bg-light400_dark400 {
+    @apply bg-[#d6d6d6] dark:bg-[#2f2f2f];
+  }
+
+  .bg-light500_dark500 {
+    @apply bg-[#bfbfbf] dark:bg-[#383838];
+  }
+
+  .text-dark100_light100 {
+    @apply text-[#171717] dark:text-[#f9f9f9];
+  }
+
+  .text-dark450_light850 {
+    @apply text-[#383838] dark:text-[#5a5a5a];
+  }
+
+  .text-primary {
+    @apply text-[#617f67];
+  }
+
+  .border-light_dark {
+    @apply border-[#bfbfbf] dark:border-[#2f2f2f];
+  }
+
+  .shadow-light_dark {
+    @apply shadow-[0_2px_8px_rgba(0,0,0,0.1)] dark:shadow-[0_2px_8px_rgba(255,255,255,0.05)];
+  }
+
+  .bg-primary-gradient {
+    background: linear-gradient(
+      129deg,
+      var(--primary-100) 0%,
+      var(--primary-200) 100%
+    );
+  }
 }
 
 .bg-dark-gradient {
