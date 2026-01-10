@@ -7,6 +7,7 @@ module.exports = {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
     "./styles/theme.css",
+    "./node_modules/@nextui-org/theme/dist/components/(calendar|date-input|date-picker|listbox|select|button|ripple|spinner|form|popover|divider|scroll-shadow).js",
   ],
   theme: {
     container: {
@@ -19,26 +20,20 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          100: "#FFF1E6",
-          500: "#FF7000",
+          100: "#72AEC8",
         },
         dark: {
-          100: "#000000",
-          200: "#0F1117",
-          300: "#151821",
-          400: "#212734",
-          450: "#3F4354",
-          500: "#101012",
+          100: "#FFFFFF",
+          200: "#202020",
+          300: "#252525",
+          400: "#191919",
+          450: "#D9D9D9",
         },
         light: {
-          100: "#F0F4F8",
-          400: "#858EAD",
-          500: "#7B8EC8",
-          600: "#E8ECF4",
-          700: "#DCE3F1",
-          800: "#F4F6F8",
-          850: "#FDFDFD",
-          900: "#FFFFFF",
+          500: "#272727",
+          600: "#E4DEE4",
+          800: "#FFFFFF",
+          850: "#3A3A3A",
         },
         headerTiltle: "#666666",
         "accent-blue": "#1DA1F2",
@@ -50,8 +45,8 @@ module.exports = {
         "light-yellow": "#FFFEDE",
         "inactive-background": "#C4C4C4",
         "import-bg-blue": "#EAF9FF",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: "hsl(var(--background))", // Định nghĩa màu nền tùy chỉnh
+        foreground: "hsl(var(--foreground))", // Định nghĩa màu chữ tùy chỉnh
         border: "hsl(var(--border))",
       },
       fontFamily: {
@@ -89,5 +84,4 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
 };

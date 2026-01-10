@@ -132,11 +132,20 @@
   }
 
   .placeholder {
-    @apply placeholder:text-light-400 dark:placeholder:text-light-500;
+    @apply placeholder:text-light-500 dark:placeholder:text-dark-100;
   }
 
   .invert-colors {
     @apply invert dark:invert-0;
+  }
+
+  .custom-color-white {
+    filter: invert(1) brightness(2) sepia(1) saturate(1000%) hue-rotate(0deg);
+  }
+
+  .custom-color-gray {
+    filter: invert(1) brightness(0) sepia(1) saturate(1000%) hue-rotate(0deg)
+      brightness(50%);
   }
 
   .shadow-light100_dark100 {
@@ -148,70 +157,151 @@
   }
 
   .primary-gradient {
-    background: linear-gradient(129deg, #ff7000 0%, #e2995f 100%);
+    background: linear-gradient(129deg, #617f67 0%, #617f67 100%);
   }
 
   .dark-gradient {
     background: linear-gradient(
       232deg,
       rgba(23, 28, 35, 0.41) 0%,
-      rgba(19, 25, 28, 0.7) 100%
+      rgba(19, 22, 28, 0.7) 100%
     );
   }
-}
+  .scrollable {
+    overflow-y: scroll;
+    scrollbar-width: none;
+  }
 
-.no-focus {
-  @apply focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 !important;
-}
+  .scrollable::-webkit-scrollbar {
+    display: none;
+  }
 
-.active-theme {
-  filter: invert(53%) sepia(98%) saturate(3332%) hue-rotate(0deg)
-    brightness(104%) contrast(106%) !important;
-}
+  /* SWIPER */
+  .mySwiper {
+    position: relative; /* Đảm bảo swiper chứa các nút điều hướng */
+    width: 100%; /* Đảm bảo swiper chiếm toàn bộ chiều rộng */
+    height: auto; /* Chiều cao tự động */
+    overflow: hidden; /* Ẩn phần vượt ra ngoài */
+  }
+  .swiper-container {
+    position: relative; /* Đảm bảo các nút điều hướng được đặt chính xác */
+    width: 100%; /* Đảm bảo rằng swiper chiếm toàn bộ chiều rộng của phần tử chứa */
+    height: auto; /* Điều chỉnh chiều cao tùy theo nội dung bên trong */
+  }
+  /* Nút điều hướng Prev và Next */
+  .swiper-button-prev,
+  .swiper-button-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 10px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
 
-.light-gradient {
-  background: linear-gradient(
-    112deg,
-    rgb(214, 230, 250) 0%,
-    rgb(249, 249, 249) 100%
-  );
-}
+  /* Nút Prev nằm bên trái */
+  .swiper-button-prev {
+    left: 0;
+    right: auto;
+  }
 
-.auth-form {
-  @apply flex min-h-screen w-full flex-col justify-center gap-5 p-6 sm:p-8 md:p-10;
-}
+  /* Nút Next nằm bên phải */
+  .swiper-button-next {
+    right: 0;
+    left: auto;
+  }
 
-.tab {
-  @apply min-h-full dark:bg-dark-400 bg-light-800 text-light-500 dark:data-[state=active]:bg-dark-300 data-[state=active]:bg-primary-100 data-[state=active]:text-primary-500 !important;
-}
+  .swiper-button-prev.cursor-not-allowed,
+  .swiper-button-next.cursor-not-allowed {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .swiper-slide {
+    text-align: center;
+    font-size: 18px;
 
-.markdown a {
-  color: #1da1f2;
-}
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-.markdown a,
-code {
-  overflow-wrap: break-word;
-  word-wrap: break-word;
-  -ms-word-break: break-all;
-  word-break: break-all;
-  word-break: break-word;
-  -ms-hyphens: auto;
-  -moz-hyphens: auto;
-  -webkit-hyphens: auto;
-  hyphens: auto;
-  padding: 2px;
-  color: #ff7000 !important;
-}
+    flex-direction: row;
+    width: fit-content;
+  }
 
-.markdown pre {
-  display: grid;
-  width: 100%;
-}
+  .swiper-slide img {
+    display: block;
+    object-fit: cover;
+    cursor: pointer;
+  }
+  .swiper-wrapper {
+    display: flex;
+    align-items: center;
+    /* justify-content: space-between; */
+  }
 
-.markdown pre code {
-  width: 100%;
-  display: block;
-  overflow-x: auto;
-  color: inherit !important;
+  /* SWIPER PRODUCT DETAIL*/
+  .mySwiper1 {
+    position: relative; /* Đảm bảo swiper chứa các nút điều hướng */
+    width: 100%; /* Đảm bảo swiper chiếm toàn bộ chiều rộng */
+    height: 400px; /* Chiều cao tự động */
+    overflow: hidden; /* Ẩn phần vượt ra ngoài */
+  }
+  .swiper-container1 {
+    position: relative; /* Đảm bảo các nút điều hướng được đặt chính xác */
+    width: 100%; /* Đảm bảo rằng swiper chiếm toàn bộ chiều rộng của phần tử chứa */
+    height: 400px; /* Điều chỉnh chiều cao tùy theo nội dung bên trong */
+  }
+  /* Nút điều hướng Prev và Next */
+  .swiper-button-prev1,
+  .swiper-button-next1 {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 10px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  /* Nút Prev nằm bên trái */
+  .swiper-button-prev1 {
+    left: 0;
+    right: auto;
+  }
+
+  /* Nút Next nằm bên phải */
+  .swiper-button-next1 {
+    right: 0;
+    left: auto;
+  }
+
+  .swiper-slide1 {
+    text-align: center;
+    font-size: 18px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    flex-direction: column;
+    width: fit-content;
+    margin-right: 0;
+  }
+
+  .swiper-slide1 img {
+    display: block;
+    object-fit: cover;
+    cursor: pointer;
+    height: 320px;
+    width: 280px;
+  }
+  .swiper-wrapper1 {
+    display: flex;
+    align-items: center;
+  }
 }
