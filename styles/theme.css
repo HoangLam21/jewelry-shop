@@ -1,0 +1,307 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .background-light500_dark100 {
+    @apply bg-light-500 dark:bg-dark-100;
+  }
+
+  .background-light700_dark400 {
+    @apply bg-light-800 dark:bg-dark-400;
+  }
+
+  .background-light800_dark300 {
+    @apply bg-light-800 dark:bg-dark-300;
+  }
+
+  .background-light700_dark200 {
+    @apply bg-light-800 dark:bg-dark-200;
+  }
+
+  .background-light600_dark200 {
+    @apply bg-light-600 dark:bg-dark-200;
+  }
+
+  .background-light700_dark300 {
+    @apply bg-light-800 dark:bg-dark-300;
+  }
+
+  .background-light800_darkgradient {
+    @apply bg-light-800 dark:dark-gradient;
+  }
+
+  .background-light800_dark400 {
+    @apply bg-light-800 dark:bg-dark-400 !important;
+  }
+
+  .text-dark100_light500 {
+    @apply dark:text-dark-100 text-light-500 !important;
+  }
+
+  .text-dark500_light100 {
+    @apply text-dark-100 dark:text-light-500 !important;
+  }
+
+  .text-dark450_light850 {
+    @apply dark:text-dark-450 text-light-850 !important;
+  }
+
+  .text-dark100_primary100 {
+    @apply text-dark-100 dark:text-primary-100;
+  }
+
+  .light-border {
+    @apply border-light-500;
+  }
+
+  .h1-bold {
+    @apply text-[30px] font-bold leading-[42px] tracking-tighter;
+  }
+
+  .h2-bold {
+    @apply text-[24px] font-bold leading-[31.2px];
+  }
+
+  .h2-semibold {
+    @apply text-[24px] font-semibold leading-[31.2px];
+  }
+
+  .h3-bold {
+    @apply text-[20px] font-bold leading-[26px];
+  }
+
+  .h3-semibold {
+    @apply text-[20px] font-semibold leading-[24.8px];
+  }
+
+  .base-medium {
+    @apply text-[18px] font-medium leading-[25.2px];
+  }
+
+  .base-semibold {
+    @apply text-[18px] font-semibold leading-[25.2px];
+  }
+
+  .base-bold {
+    @apply text-[18px] font-bold leading-[140%];
+  }
+
+  .paragraph-regular {
+    @apply text-[16px] font-normal leading-[22.4px];
+  }
+
+  .paragraph-medium {
+    @apply text-[16px] font-medium leading-[22.4px];
+  }
+
+  .paragraph-semibold {
+    @apply text-[16px] font-semibold leading-[20.8px];
+  }
+
+  .body-regular {
+    @apply text-[14px] font-normal leading-[19.6px];
+  }
+
+  .body-medium {
+    @apply text-[14px] font-medium leading-[18.2px];
+  }
+
+  .body-semibold {
+    @apply text-[14px] font-semibold leading-[18.2px];
+  }
+
+  .small-regular {
+    @apply text-[12px] font-normal leading-[15.6px];
+  }
+
+  .small-medium {
+    @apply text-[12px] font-medium leading-[15.6px];
+  }
+
+  .small-semibold {
+    @apply text-[12px] font-semibold leading-[15.6px];
+  }
+
+  .subtle-medium {
+    @apply text-[10px] font-medium leading-[13px] !important;
+  }
+
+  .subtle-regular {
+    @apply text-[10px] font-normal leading-[13px];
+  }
+
+  .placeholder {
+    @apply placeholder:text-light-500 dark:placeholder:text-dark-100;
+  }
+
+  .invert-colors {
+    @apply invert dark:invert-0;
+  }
+
+  .custom-color-white {
+    filter: invert(1) brightness(2) sepia(1) saturate(1000%) hue-rotate(0deg);
+  }
+
+  .custom-color-gray {
+    filter: invert(1) brightness(0) sepia(1) saturate(1000%) hue-rotate(0deg)
+      brightness(50%);
+  }
+
+  .shadow-light100_dark100 {
+    @apply shadow-light-100 dark:shadow-dark-100;
+  }
+
+  .shadow-light100_darknone {
+    @apply shadow-light-100 dark:shadow-none;
+  }
+
+  .primary-gradient {
+    background: linear-gradient(129deg, #617f67 0%, #617f67 100%);
+  }
+
+  .dark-gradient {
+    background: linear-gradient(
+      232deg,
+      rgba(23, 28, 35, 0.41) 0%,
+      rgba(19, 22, 28, 0.7) 100%
+    );
+  }
+  .scrollable {
+    overflow-y: scroll;
+    scrollbar-width: none;
+  }
+
+  .scrollable::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* SWIPER */
+  .mySwiper {
+    position: relative; /* Đảm bảo swiper chứa các nút điều hướng */
+    width: 100%; /* Đảm bảo swiper chiếm toàn bộ chiều rộng */
+    height: auto; /* Chiều cao tự động */
+    overflow: hidden; /* Ẩn phần vượt ra ngoài */
+  }
+  .swiper-container {
+    position: relative; /* Đảm bảo các nút điều hướng được đặt chính xác */
+    width: 100%; /* Đảm bảo rằng swiper chiếm toàn bộ chiều rộng của phần tử chứa */
+    height: auto; /* Điều chỉnh chiều cao tùy theo nội dung bên trong */
+  }
+  /* Nút điều hướng Prev và Next */
+  .swiper-button-prev,
+  .swiper-button-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 10px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  /* Nút Prev nằm bên trái */
+  .swiper-button-prev {
+    left: 0;
+    right: auto;
+  }
+
+  /* Nút Next nằm bên phải */
+  .swiper-button-next {
+    right: 0;
+    left: auto;
+  }
+
+  .swiper-button-prev.cursor-not-allowed,
+  .swiper-button-next.cursor-not-allowed {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .swiper-slide {
+    text-align: center;
+    font-size: 18px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    flex-direction: row;
+    width: fit-content;
+  }
+
+  .swiper-slide img {
+    display: block;
+    object-fit: cover;
+    cursor: pointer;
+  }
+  .swiper-wrapper {
+    display: flex;
+    align-items: center;
+    /* justify-content: space-between; */
+  }
+
+  /* SWIPER PRODUCT DETAIL*/
+  .mySwiper1 {
+    position: relative; /* Đảm bảo swiper chứa các nút điều hướng */
+    width: 100%; /* Đảm bảo swiper chiếm toàn bộ chiều rộng */
+    height: 400px; /* Chiều cao tự động */
+    overflow: hidden; /* Ẩn phần vượt ra ngoài */
+  }
+  .swiper-container1 {
+    position: relative; /* Đảm bảo các nút điều hướng được đặt chính xác */
+    width: 100%; /* Đảm bảo rằng swiper chiếm toàn bộ chiều rộng của phần tử chứa */
+    height: 400px; /* Điều chỉnh chiều cao tùy theo nội dung bên trong */
+  }
+  /* Nút điều hướng Prev và Next */
+  .swiper-button-prev1,
+  .swiper-button-next1 {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 10px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  /* Nút Prev nằm bên trái */
+  .swiper-button-prev1 {
+    left: 0;
+    right: auto;
+  }
+
+  /* Nút Next nằm bên phải */
+  .swiper-button-next1 {
+    right: 0;
+    left: auto;
+  }
+
+  .swiper-slide1 {
+    text-align: center;
+    font-size: 18px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    flex-direction: column;
+    width: fit-content;
+    margin-right: 0;
+  }
+
+  .swiper-slide1 img {
+    display: block;
+    object-fit: cover;
+    cursor: pointer;
+    height: 320px;
+    width: 280px;
+  }
+  .swiper-wrapper1 {
+    display: flex;
+    align-items: center;
+  }
+}
