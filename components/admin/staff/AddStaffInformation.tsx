@@ -125,18 +125,24 @@ const AddStaffInformation = () => {
         if (result) {
           // Only upload avatar if there is an avatar to upload
           if (avatar && avatar.url) {
-            await createAvatar(result._id, avatar); // Pass the staff ID and avatar
-            alert("Staff and avatar created successfully.");
+            try {
+              await createAvatar(result._id, avatar); // Pass the staff ID and avatar
+              alert("✅ Tạo nhân viên thành công! Đã tải lên ảnh đại diện.");
+            } catch (avatarError: any) {
+              // Staff đã được tạo nhưng upload avatar thất bại
+              alert(`✅ Tạo nhân viên thành công!\n⚠️ Không thể tải lên ảnh đại diện: ${avatarError?.message || "Lỗi không xác định"}`);
+            }
           } else {
-            alert("Staff created successfully, but no avatar uploaded.");
+            alert("✅ Tạo nhân viên thành công!");
           }
         } else {
-          alert("Can't create staff.");
+          alert("❌ Không thể tạo nhân viên. Vui lòng thử lại.");
         }
       } catch (err: any) {
-        console.error("Error creating data:", err);
-        const errorMessage = err?.message || "An unexpected error occurred.";
-        alert(`Error creating data: ${errorMessage}`);
+        console.error("Error creating staff:", err);
+        // Hiển thị error message rõ ràng hơn
+        const errorMessage = err?.message || "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.";
+        alert(`❌ Lỗi: ${errorMessage}`);
       }
     }
   };

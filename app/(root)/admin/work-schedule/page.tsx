@@ -10,22 +10,31 @@ import UpdateScheduleForm from "@/components/form/schedule/UpdateScheduleForm";
 import * as XLSX from "xlsx";
 import Staff from "@/database/staff.model";
 const Page = () => {
-  const [schedules, setSchedules] = useState<Schedule[] | []>([]);
+  const [schedules, setSchedules] = useState<Schedule[] | null>(null);
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [editSchedule, setEditSchedule] = useState<Schedule>();
   const [date, setDate] = useState<DateValue>();
 
   useEffect(() => {
+    let isMounted = true;
     const fetchScheduleData = async () => {
-      const schedules = await fetchSchedule();
-      if (schedules) {
-        setSchedules(schedules);
-      } else {
-        setSchedules([]);
+      try {
+        const schedules = await fetchSchedule();
+        if (isMounted) {
+          setSchedules(schedules || []);
+        }
+      } catch (error) {
+        console.error("Error loading schedules:", error);
+        if (isMounted) {
+          setSchedules([]);
+        }
       }
     };
     fetchScheduleData();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleExport = async () => {
@@ -44,6 +53,7 @@ const Page = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Schedules");
     XLSX.writeFile(wb, "schedules.xlsx");
   };
+
   return (
     <div className="w-full h-screen flex flex-col flex-1 p-4">
       <Headers

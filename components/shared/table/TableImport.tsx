@@ -1,6 +1,4 @@
 import React from "react";
-import { Icon } from "@iconify/react/dist/iconify.js";
-import sortIcon from "@iconify/icons-mi/sort";
 
 const TableImport = ({
   columns,

@@ -76,18 +76,23 @@ export async function createStaff(
         "Content-Type": "application/json",
         // Authorization: `${token}`,
       },
+      credentials: 'include', // QUAN TRỌNG: Gửi cookies để Clerk có thể đọc session
       body: JSON.stringify(params),
     });
 
+    const responseData = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Error creating media");
+      // Lấy message từ response (có thể là message hoặc error)
+      const errorMessage = responseData.message || responseData.error || "Không thể tạo nhân viên. Vui lòng thử lại.";
+      throw new Error(errorMessage);
     }
 
-    const data = await response.json();
-    return data;
+    // Trả về data từ response (có thể là data hoặc toàn bộ object)
+    return responseData.data || responseData;
   } catch (error) {
-    console.error("Failed to create media:", error);
+    console.error("Failed to create staff:", error);
+    // Giữ nguyên error message để component có thể hiển thị
     throw error;
   }
 }

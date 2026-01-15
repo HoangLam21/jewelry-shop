@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 import formidable from "formidable";
 import { updateProduct } from "@/lib/actions/product.action";
 import { IncomingForm } from "formidable";
+import { withStaffOrAdmin, ApiAuthResult } from "@/lib/utils/api-auth";
 
 export const config = {
   api: {
@@ -9,9 +10,10 @@ export const config = {
   },
 };
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
+  auth: ApiAuthResult
 ) {
   if (req.method === "PUT") {
     const { id } = req.query;
@@ -103,3 +105,5 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 }
+
+export default withStaffOrAdmin(handler);

@@ -10,29 +10,35 @@ import Products from "@/components/form/home/Products";
 import Collections from "@/components/form/home/Collections";
 import Sale from "@/components/form/home/Sale";
 import { fetchProducts } from "@/lib/services/product.service";
-import { getCustomerById } from "@/lib/services/customer.service";
+import { getCurrentCustomer } from "@/lib/services/customer.service";
 import { fetchCategory } from "@/lib/services/category.service";
 import { fetchVoucher } from "@/lib/services/voucher.service";
+import { useUser } from "@clerk/nextjs";
 
 export default function Page() {
+  const { user, isLoaded } = useUser();
   const [productsData, setProductsData] = useState<any[]>([]);
   const [categoriesData, setCategoriesData] = useState<any[]>([]);
   const [vouchersData, setVouchersData] = useState<any[]>([]);
+  
   useEffect(() => {
     const fetchAndSaveUser = async () => {
+      // Chỉ fetch nếu user đã đăng nhập
+      if (!isLoaded || !user) {
+        return;
+      }
+
       try {
-        const userId = "6776bd0974de08ccc866a4ab";
-        if (userId) {
-          const customerData = await getCustomerById(userId);
-          localStorage.setItem("userData", JSON.stringify(customerData));
-        }
+        const customerData = await getCurrentCustomer();
+        localStorage.setItem("userData", JSON.stringify(customerData));
       } catch (error) {
         console.error("Error fetching customer data:", error);
+        // Không throw error để không block trang nếu user chưa là customer
       }
     };
 
     fetchAndSaveUser();
-  }, []);
+  }, [user, isLoaded]);
 
   useEffect(() => {
     let isMounted = true;

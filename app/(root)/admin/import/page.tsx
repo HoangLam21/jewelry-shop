@@ -9,7 +9,7 @@ import React, { Provider, useEffect, useState } from "react";
 
 const Page = () => {
   const router = useRouter();
-  const [importData, setImportData] = useState<any[] | null>([]);
+  const [importData, setImportData] = useState<any[] | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -20,10 +20,13 @@ const Page = () => {
         console.log(data, "this is data of import");
 
         if (isMounted) {
-          setImportData(data);
+          setImportData(data || []);
         }
       } catch (error) {
-        console.error("Error loading Provider:", error);
+        console.error("Error loading Import:", error);
+        if (isMounted) {
+          setImportData([]);
+        }
       }
     };
     loadImport();
@@ -31,14 +34,6 @@ const Page = () => {
       isMounted = false;
     };
   }, []);
-
-  if (!importData) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-white">
-        <div className="loader"></div>
-      </div>
-    );
-  }
   console.log(importData, "this is import");
   const handleExport = () => {
     console.log("Export clicked");

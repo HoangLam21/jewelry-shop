@@ -5,6 +5,7 @@ import Avatar from "./Avatar";
 import { deleteOrder, fetchOrder } from "@/lib/service/order.service";
 import MyButton from "@/components/shared/button/MyButton";
 import OrderDetailModal from "../order/DetailOrder";
+import { useUser } from "@clerk/nextjs";
 interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,6 +19,7 @@ interface CreateCustomer {
 }
 
 const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose }) => {
+  const { user: clerkUser, isLoaded } = useUser();
   const [activeTab, setActiveTab] = useState<"info" | "history">("info");
   const [user, setUser] = useState<any>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -45,7 +47,16 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose }) => {
     }
   }, []);
 
+  // Chỉ fetch orders khi user đã đăng nhập và modal đang mở
   useEffect(() => {
+    // Chỉ fetch nếu:
+    // 1. Modal đang mở
+    // 2. User đã đăng nhập (có Clerk user)
+    // 3. Có user data từ localStorage
+    if (!isOpen || !isLoaded || !clerkUser || !user?._id) {
+      return;
+    }
+
     let isMounted = true;
     const getAllOrders = async () => {
       try {
@@ -55,14 +66,17 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose }) => {
           console.log("orders", data);
         }
       } catch (error) {
-        console.error("Error loading posts:", error);
+        // Không log error nếu là 401 (unauthorized) - user chưa đăng nhập
+        if (error instanceof Error && !error.message.includes("401")) {
+          console.error("Error loading orders:", error);
+        }
       }
     };
     getAllOrders();
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isOpen, isLoaded, clerkUser, user?._id]);
 
   useEffect(() => {
     if (user && user._id && ordersData.length > 0) {

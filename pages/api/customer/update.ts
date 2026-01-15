@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { updateCustomer } from "@/lib/actions/customer.action";
+import { withCustomerOrAbove, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse, auth: ApiAuthResult) {
   if (req.method === "PUT") {
     const { id } = req.query; 
     const data = req.body; 
@@ -25,3 +26,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Method not allowed" });
   }
 }
+
+export default withCustomerOrAbove(handler);

@@ -1,10 +1,12 @@
 // Create a new category
 import { NextApiRequest, NextApiResponse } from "next";
-import { createCategory } from "@/lib/actions/category.action"; // Đảm bảo đường dẫn chính xác
+import { createCategory } from "@/lib/actions/category.action";
+import { withStaffOrAdmin, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(
+async function handler(
     req: NextApiRequest,
-    res: NextApiResponse
+    res: NextApiResponse,
+    auth: ApiAuthResult
 ) {
     if (req.method === "POST") {
         try {
@@ -19,3 +21,5 @@ export default async function handler(
         return res.status(405).json({ error: "Method not allowed" });
     }
 }
+
+export default withStaffOrAdmin(handler);

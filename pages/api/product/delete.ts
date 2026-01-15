@@ -1,9 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { deleteProduct } from "@/lib/actions/product.action"; // Đảm bảo đường dẫn chính xác
+import { deleteProduct } from "@/lib/actions/product.action";
+import { withStaffOrAdmin, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
+  auth: ApiAuthResult
 ) {
   const { id } = req.query;
 
@@ -27,3 +29,5 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 }
+
+export default withStaffOrAdmin(handler);

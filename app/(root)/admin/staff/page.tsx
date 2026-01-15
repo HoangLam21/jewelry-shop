@@ -11,7 +11,28 @@ import * as XLSX from "xlsx";
 
 const Page = () => {
   const router = useRouter();
-  const [staffs, setStaffs] = useState<Staff[] | null>([]);
+  const [staffs, setStaffs] = useState<Staff[] | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadStaff = async () => {
+      try {
+        const data = await fetchStaff();
+        if (isMounted) {
+          setStaffs(data || []);
+        }
+      } catch (error) {
+        console.error("Error loading staff:", error);
+        if (isMounted) {
+          setStaffs([]);
+        }
+      }
+    };
+    loadStaff();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleExport = () => {
     if (!staffs || staffs.length === 0) {
@@ -44,32 +65,6 @@ const Page = () => {
   const handleAddStaff = () => {
     router.push(`/admin/staff/add`);
   };
-
-  useEffect(() => {
-    let isMounted = true;
-    const loadStaff = async () => {
-      try {
-        const data = await fetchStaff();
-        if (isMounted) {
-          setStaffs(data);
-        }
-      } catch (error) {
-        console.error("Error loading staff:", error);
-      }
-    };
-    loadStaff();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  if (!staffs) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-white">
-        <div className="loader"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full h-full p-4 flex flex-col gap-4">

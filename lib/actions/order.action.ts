@@ -58,6 +58,53 @@ export const getOrders = async () => {
   }
 };
 
+export const getOrdersByCustomerId = async (customerId: string) => {
+  try {
+    await connectToDatabase();
+    const orders = await Order.find({ customer: new ObjectId(customerId) })
+      .populate("customer")
+      .populate("staff");
+
+    const orderResponse = [];
+    for (const order of orders) {
+      const products = [];
+      for (const detail of order.details) {
+        const product = await Product.findById(detail.id.toString())
+          .populate("vouchers")
+          .populate("provider")
+          .populate("files");
+
+        if (!product) {
+          throw new Error("Product not found");
+        }
+        products.push({
+          product: {
+            ...product.toObject(),
+            vouchers: product.vouchers,
+            provider: product.provider,
+            files: product.files
+          },
+          material: detail.material,
+          size: detail.size,
+          quantity: detail.quantity,
+          unitPrice: detail.unitPrice,
+          discount: detail.discount
+        });
+      }
+      orderResponse.push({
+        ...order.toObject(),
+        customer: order.customer,
+        staff: order.staff,
+        products: products
+      });
+    }
+    return orderResponse;
+  } catch (error) {
+    console.log("Error fetching Orders by Customer ID: ", error);
+    return [];
+  }
+};
+
 export const createOrder = async (data: {
   cost: number;
   discount: number;

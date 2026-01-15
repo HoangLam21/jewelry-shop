@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 import { useTheme } from "@/contexts/ThemeProvider";
 import {
@@ -15,6 +15,32 @@ import "@/styles/theme.css";
 
 const Theme = () => {
   const { mode, setMode } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Chỉ render theme icon sau khi component mount trên client để tránh hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Render placeholder với cùng kích thước để tránh layout shift
+  if (!mounted) {
+    return (
+      <Menubar className="relative border-none bg-transparent shadow-none">
+        <MenubarMenu>
+          <MenubarTrigger>
+            <Image
+              src="/assets/icons/sun.svg"
+              alt="theme"
+              width={20}
+              height={20}
+              className="active-theme"
+            />
+          </MenubarTrigger>
+        </MenubarMenu>
+      </Menubar>
+    );
+  }
+
   return (
     <Menubar className="relative border-none bg-transparent shadow-none">
       <MenubarMenu>

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import ShippingInfomation from "@/components/form/checkout/ShippingInfomation";
+import ShippingInformation from "@/components/form/checkout/ShippingInformation";
 import { useRouter } from "next/navigation";
 import { useBuyNow } from "@/contexts/BuyNowContext";
 import { CreateOrder } from "@/dto/OrderDTO";
@@ -113,21 +113,28 @@ export default function Page() {
         },
         body: JSON.stringify(orderData),
       });
-      const createdOrder = await response.json();
+      
       if (!response.ok) {
-        alert("Order can't create. Please try again.");
+        const errorData = await response.json();
+        alert(errorData.error || "Order can't create. Please try again.");
+        return;
       }
+      
+      const createdOrder = await response.json();
+      
       if (paymentMethod === "vnpay") {
         const data = await payVNPay(createdOrder._id, totalFinalPrice);
         router.push(data.url);
+        return;
       }
-      const data = await response.json();
+      
       alert("Order created!");
       dispatchBuyNow({ type: "RESET_BUY_NOW" });
       router.push("/product");
-      console.log("Order created:", data);
+      console.log("Order created:", createdOrder);
     } catch (error: any) {
       console.error("Error creating order:", error.message);
+      alert("Failed to create order. Please try again.");
     }
   };
 
@@ -170,7 +177,7 @@ export default function Page() {
             SHIPPING INFOMATION
           </h2>
           <div className="flex flex-col space-y-4">
-            <ShippingInfomation
+            <ShippingInformation
               city={city}
               setCity={setCity}
               setAddress={setAddress}

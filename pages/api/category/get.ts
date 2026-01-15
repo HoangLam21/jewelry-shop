@@ -1,6 +1,6 @@
-// Get a category by ID
+// Get a category by ID (Public - Guest can view)
 import { NextApiRequest, NextApiResponse } from "next";
-import { getCategoryById } from "@/lib/actions/category.action"; // Đảm bảo đường dẫn chính xác
+import { getCategoryById } from "@/lib/actions/category.action";
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,7 +11,7 @@ export default async function handler(
       const { id } = req.query; // Lấy ID từ query params
 
       if (!id || typeof id !== "string") {
-        return res.status(400).json({ error: "Invalid or missing staff ID" });
+        return res.status(400).json({ error: "Invalid or missing category ID" });
       }
       const category = await getCategoryById(id);
       return res.status(200).json(category);

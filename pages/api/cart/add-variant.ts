@@ -1,10 +1,12 @@
 // Add a product variant to a cart
 import { NextApiRequest, NextApiResponse } from "next";
 import { addProductVariantToCart } from "@/lib/actions/cart.action";
+import { withCustomerOrAbove, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(
+async function handler(
     req: NextApiRequest,
-    res: NextApiResponse
+    res: NextApiResponse,
+    auth: ApiAuthResult
 ) {
     if (req.method === "POST") {
         try {
@@ -31,3 +33,5 @@ export default async function handler(
         return res.status(405).json({ error: "Method not allowed" });
     }
 }
+
+export default withCustomerOrAbove(handler);

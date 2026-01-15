@@ -32,7 +32,7 @@ const ProviderList = ({
   provider,
   setProvider,
 }: {
-  provider: Provider[];
+  provider: Provider[] | null;
   setProvider: any;
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -40,7 +40,6 @@ const ProviderList = ({
   const rowsPerPage = 8;
   const [deleteProviderId, setDeleteProviderId] = useState<string | null>(null);
   const [onDelete, setOnDelete] = useState(false);
-
   const [sortConfig, setSortConfig] = useState<{
     key: SortableKeys;
     direction: "ascending" | "descending";
@@ -49,6 +48,14 @@ const ProviderList = ({
     direction: "ascending",
   });
   type SortableKeys = "id" | "name" | "contact" | "address";
+
+  if (!provider || provider === null) {
+    return (
+      <div className="w-full flex flex-col p-4 rounded-md shadow-sm items-center justify-center min-h-[400px]">
+        <div className="loader"></div>
+      </div>
+    );
+  }
 
   const getValueByKey = (item: (typeof provider)[0], key: SortableKeys) => {
     switch (key) {

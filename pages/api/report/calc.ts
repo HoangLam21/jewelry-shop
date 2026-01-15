@@ -1,10 +1,12 @@
 // Calculate the sum of all finances between two dates
 import { NextApiRequest, NextApiResponse } from "next";
-import { calculateReportFinancesBetweenDates } from "@/lib/actions/report.action"; // Đảm bảo đường dẫn chính xác
+import { calculateReportFinancesBetweenDates } from "@/lib/actions/report.action";
+import { withAdmin, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(
+async function handler(
     req: NextApiRequest,
-    res: NextApiResponse
+    res: NextApiResponse,
+    auth: ApiAuthResult
 ) {
     const startDateString = req.query.startDate as string;
     const endDateString = req.query.endDate as string;
@@ -31,3 +33,5 @@ export default async function handler(
         return res.status(405).json({ error: "Method not allowed" });
     }
 }
+
+export default withAdmin(handler);
