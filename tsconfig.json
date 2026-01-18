@@ -28,7 +28,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    "pages/api/product/[slug]ts"
   ],
   "exclude": ["node_modules"]
 }

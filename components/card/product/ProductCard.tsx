@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCart } from "@/contexts/CartContext";
 import { addToCart } from "@/lib/services/cart.service";
 import { useRouter } from "next/navigation";
@@ -43,8 +44,8 @@ const ProductCard = ({ item }: { item: any }) => {
     }
   };
 
-  const handleNavigateProductDetail = (id: string) => {
-    router.push(`/product/${id}`);
+  const handleNavigateProductDetail = (slug: string) => {
+    router.push(`/product/${slug}`);
   };
 
   return (
@@ -56,7 +57,7 @@ const ProductCard = ({ item }: { item: any }) => {
       <img
         src={item.files[0].url}
         alt={item.name}
-        onClick={() => handleNavigateProductDetail(item._id)}
+        onClick={() => handleNavigateProductDetail(item.slug)}
         className="w-full h-[350px] mt-2 object-cover"
       />
       <h2 className="text-[20px] jost font-normal uppercase text-dark100_light500">
