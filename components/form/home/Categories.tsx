@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { fetchCategory } from "@/lib/services/category.service";
+import { CategoryResponse } from "@/dto/CategoryDTO";
 import { useRouter } from "next/navigation";
 
-const Categories = ({ categoriesData }: any) => {
+// Sửa interface props
+interface CategoriesProps {
+  categoriesData: CategoryResponse[];
+}
+
+const Categories = ({ categoriesData }: CategoriesProps) => {
   const router = useRouter();
 
   const handleNavigateCategoryDetail = (id: string) => {
     router.push(`/category/${id}`);
   };
+
   return (
     <div className="mt-[150px] w-[95%] mx-auto">
       {/* Header */}
@@ -30,7 +34,7 @@ const Categories = ({ categoriesData }: any) => {
           scrollbarColor: "#ffffff #f4ece3",
         }}
       >
-        {categoriesData?.map((category: any) => (
+        {categoriesData?.map((category: CategoryResponse) => (
           <div
             key={category._id}
             className="flex-shrink-0 cursor-pointer flex flex-col items-center"
@@ -44,24 +48,24 @@ const Categories = ({ categoriesData }: any) => {
                 <span className="text-primary-100 text-3xl">.</span>
               </p>
             </div>
-
-            <style jsx>{`
-              .scrollbar-hide::-webkit-scrollbar {
-                width: 8px;
-                height: 8px;
-              }
-              .scrollbar-hide::-webkit-scrollbar-thumb {
-                background-color: #ffffff;
-                border-radius: 10px;
-              }
-              .scrollbar-hide::-webkit-scrollbar-track {
-                background-color: #f4ece3;
-                border-radius: 10px;
-              }
-            `}</style>
           </div>
         ))}
       </div>
+
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        .scrollbar-hide::-webkit-scrollbar-thumb {
+          background-color: #ffffff;
+          border-radius: 10px;
+        }
+        .scrollbar-hide::-webkit-scrollbar-track {
+          background-color: #f4ece3;
+          border-radius: 10px;
+        }
+      `}</style>
     </div>
   );
 };

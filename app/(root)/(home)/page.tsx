@@ -14,13 +14,16 @@ import { getCurrentCustomer } from "@/lib/services/customer.service";
 import { fetchCategory } from "@/lib/services/category.service";
 import { fetchVoucher } from "@/lib/services/voucher.service";
 import { useUser } from "@clerk/nextjs";
+import { CategoryResponse } from "@/dto/CategoryDTO";
+import { ProductResponse } from "@/dto/ProductDTO";
+import { Voucher } from "@/dto/VoucherDTO";
 
 export default function Page() {
   const { user, isLoaded } = useUser();
-  const [productsData, setProductsData] = useState<any[]>([]);
-  const [categoriesData, setCategoriesData] = useState<any[]>([]);
-  const [vouchersData, setVouchersData] = useState<any[]>([]);
-  
+  const [productsData, setProductsData] = useState<ProductResponse[]>([]);
+  const [categoriesData, setCategoriesData] = useState<CategoryResponse[]>([]);
+  const [vouchersData, setVouchersData] = useState<Voucher[]>([]);
+
   useEffect(() => {
     const fetchAndSaveUser = async () => {
       // Chỉ fetch nếu user đã đăng nhập
@@ -49,6 +52,7 @@ export default function Page() {
         const vouchers = await fetchVoucher();
         if (isMounted) {
           setProductsData(data);
+          console.log(data);
           setCategoriesData(categories);
           setVouchersData(vouchers);
           // console.log(vouchers);
