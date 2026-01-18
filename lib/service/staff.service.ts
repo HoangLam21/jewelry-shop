@@ -1,31 +1,50 @@
 import { Import } from "@/dto/ImportDTO";
 import { CreateStaff, FileContent, Staff, uploadAvatar } from "@/dto/StaffDTO";
 
-export async function fetchStaff(): Promise<[]> {
+/**
+ * Lấy danh sách tất cả staff
+ */
+export async function fetchStaff(): Promise<Staff[]> {
   try {
-    const response = await fetch(`/api/staff/all`);
+    const response = await fetch(`/api/staff/all`, {
+      credentials: 'include',
+    });
     if (!response.ok) {
-      throw new Error("Error fetching posts");
+      throw new Error("Error fetching staffs");
     }
     const data = await response.json();
-    // console.log(data);
     return data;
   } catch (error) {
-    console.error("Failed to fetch posts:", error);
+    console.error("Failed to fetch staffs:", error);
     throw error;
   }
 }
 
+// Alias
+export const getStaffs = fetchStaff;
+
+/**
+ * Lấy thông tin staff theo ID
+ */
 export async function getStaffById(staffId: string): Promise<Staff | null> {
   try {
-    console.log(`/api/staff/id/${staffId}`, "this is staff ");
-    const response = await fetch(`/api/staff/id?id=${staffId}`);
+    console.log(`Fetching staff with ID: ${staffId}`);
+    const response = await fetch(`/api/staff/id?id=${staffId}`, {
+      credentials: 'include',
+    });
 
     if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
       throw new Error("Không thể lấy thông tin nhân viên.");
     }
 
-    const data: Staff = await response.json();
+    const result = await response.json();
+    
+    // Xử lý cả 2 format: { success, data } hoặc trực tiếp object
+    const data = result.data || result;
+    console.log("Staff data received:", data);
     return data;
   } catch (error) {
     console.error("Lỗi khi lấy thông tin nhân viên:", error);
@@ -33,162 +52,154 @@ export async function getStaffById(staffId: string): Promise<Staff | null> {
   }
 }
 
-export async function getAllImportsOfStaff(staffId: string): Promise<[]> {
-  // const token = localStorage.getItem("token");
-  // if (!token) {
-  //   console.error("Không tìm thấy token");
-  //   throw new Error("Thiếu token xác thực.");
-  // }
+// Alias
+export const fetchStaffById = getStaffById;
 
+/**
+ * Lấy danh sách imports của staff
+ */
+export async function getAllImportsOfStaff(staffId: string): Promise<Import[]> {
   try {
-    const response = await fetch(
-      `/api/import/staff?id=${staffId}`
-      //   {
-      //   headers: {
-      //     Authorization: `${token}`,
-      //   },
-      // }
-    );
+    const response = await fetch(`/api/import/staff?id=${staffId}`, {
+      credentials: 'include',
+    });
 
-    // if (!response.ok) {
-    //   throw new Error("Không thể lấy thông tin nhân viên.");
-    // }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Không thể lấy danh sách imports.");
+    }
 
-    const data = await response.json();
-
-    console.log(data, "import taff");
+    const result = await response.json();
+    const data = result.data || result;
+    console.log("Imports of staff:", data);
     return data;
   } catch (error) {
-    console.error("Lỗi khi lấy thông tin nhân viên:", error);
+    console.error("Lỗi khi lấy imports của nhân viên:", error);
     throw error;
   }
 }
 
-export async function createStaff(
-  params: CreateStaff
-  // token: string
-): Promise<Staff> {
+// Alias
+export const getImportsOfStaff = getAllImportsOfStaff;
+
+/**
+ * Tạo staff mới
+ */
+export async function createStaff(params: CreateStaff): Promise<Staff> {
   try {
-    console.log(params, "param");
+    console.log("Creating staff with params:", params);
     const response = await fetch(`/api/staff/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        // Authorization: `${token}`,
       },
-      credentials: 'include', // QUAN TRỌNG: Gửi cookies để Clerk có thể đọc session
+      credentials: 'include',
       body: JSON.stringify(params),
     });
 
     const responseData = await response.json();
 
     if (!response.ok) {
-      // Lấy message từ response (có thể là message hoặc error)
-      const errorMessage = responseData.message || responseData.error || "Không thể tạo nhân viên. Vui lòng thử lại.";
+      const errorMessage = responseData.message || responseData.error || "Không thể tạo nhân viên.";
       throw new Error(errorMessage);
     }
 
-    // Trả về data từ response (có thể là data hoặc toàn bộ object)
     return responseData.data || responseData;
   } catch (error) {
     console.error("Failed to create staff:", error);
-    // Giữ nguyên error message để component có thể hiển thị
     throw error;
   }
 }
 
-export async function createAvatar(
-  staffId: string,
-  avatarFile: FileContent // Expecting a File object here
-): Promise<any> {
+/**
+ * Cập nhật thông tin staff
+ */
+export async function updatedStaff(staffId: string, params: CreateStaff): Promise<Staff> {
   try {
-    console.log(avatarFile, "update avatar");
-
-    const formData = new FormData();
-
-    // Ensure that avatarFile contains a valid image file
-    if (avatarFile && avatarFile.url) {
-      const file = await fetch(avatarFile.url)
-        .then((res) => res.blob())
-        .then(
-          (blob) =>
-            new File([blob], avatarFile.fileName, { type: avatarFile.format })
-        );
-
-      formData.append("image", file); // Appending the actual file for upload
-    } else {
-      throw new Error("No valid avatar file provided.");
-    }
-
-    console.log(formData, "this is forrm dâtta");
-
-    // Post the form data to upload the avatar for the given staff ID
-    const response = await fetch(`/api/staff/upload-avatar?id=${staffId}`, {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Error uploading avatar");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Failed to upload avatar:", error);
-    throw error;
-  }
-}
-
-export async function updatedStaff(
-  staffId: string,
-  params: CreateStaff
-  // token: string
-): Promise<Staff> {
-  try {
-    console.log(params, "param");
+    console.log("Updating staff:", staffId, params);
     const response = await fetch(`/api/staff/update?id=${staffId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        // Authorization: `${token}`,
       },
+      credentials: 'include',
       body: JSON.stringify(params),
     });
 
+    const responseData = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Error creating media");
+      const errorMessage = responseData.message || responseData.error || "Không thể cập nhật nhân viên.";
+      throw new Error(errorMessage);
     }
 
-    const data = await response.json();
-    return data;
+    return responseData.data || responseData;
   } catch (error) {
-    console.error("Failed to create media:", error);
+    console.error("Failed to update staff:", error);
     throw error;
   }
 }
 
-export async function deleteStaff(staffId: string) {
+/**
+ * Xóa staff
+ */
+export async function deleteStaff(staffId: string): Promise<boolean> {
   try {
-    console.log(`/api/staff/delete?id=${staffId}`, "delete ");
+    console.log("Deleting staff:", staffId);
     const response = await fetch(`/api/staff/delete?id=${staffId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: 'include',
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || "Error deleting staff");
+      throw new Error(errorData.message || "Không thể xóa nhân viên.");
     }
 
-    const data = await response.json();
-    return data;
+    return true;
   } catch (error) {
     console.error("Failed to delete staff:", error);
+    throw error;
+  }
+}
+
+/**
+ * Upload avatar cho staff
+ */
+export async function createAvatar(staffId: string, avatarFile: FileContent): Promise<any> {
+  try {
+    console.log("Uploading avatar for staff:", staffId);
+
+    const formData = new FormData();
+
+    if (avatarFile && avatarFile.url) {
+      // Convert URL to File
+      const file = await fetch(avatarFile.url)
+        .then((res) => res.blob())
+        .then((blob) => new File([blob], avatarFile.fileName || "avatar.jpg", { type: avatarFile.format || "image/jpeg" }));
+
+      formData.append("image", file);
+    } else {
+      throw new Error("No valid avatar file provided.");
+    }
+
+    const response = await fetch(`/api/staff/upload-avatar?id=${staffId}`, {
+      method: "POST",
+      credentials: 'include',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Không thể upload avatar.");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to upload avatar:", error);
     throw error;
   }
 }
