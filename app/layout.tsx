@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from "@/contexts/ThemeProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { BuyNowProvider } from "@/contexts/BuyNowContext";
@@ -26,20 +27,43 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Get Clerk publishable key from environment
+  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+  if (!clerkPublishableKey) {
+    console.error('⚠️ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is missing! Please add it to .env file');
+  }
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>
-          <CartProvider>
-            <BuyNowProvider>
-              <ProductManageProvider>
-                {children}
-              </ProductManageProvider>
-            </BuyNowProvider>
-          </CartProvider>
-        </ThemeProvider>
+        <ClerkProvider
+          publishableKey={clerkPublishableKey || ''}
+          // Add appearance config to ensure scripts load properly
+          appearance={{
+            elements: {
+              formButtonPrimary: 'bg-primary text-primary-foreground hover:bg-primary/90',
+            },
+          }}
+          // Add domain if using custom domain (optional)
+          // domain={process.env.NEXT_PUBLIC_CLERK_DOMAIN}
+          // Add afterSignInUrl and afterSignUpUrl for better UX
+          // Redirect đến callback route để check role và redirect tương ứng
+          afterSignInUrl="/auth/callback"
+          afterSignUpUrl="/auth/callback"
+        >
+          <ThemeProvider>
+            <CartProvider>
+              <BuyNowProvider>
+                <ProductManageProvider>
+                  {children}
+                </ProductManageProvider>
+              </BuyNowProvider>
+            </CartProvider>
+          </ThemeProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

@@ -12,7 +12,7 @@ import * as XLSX from "xlsx";
 
 const Page = () => {
   const router = useRouter();
-  const [provider, setProvider] = useState<Provider[] | null>([]);
+  const [provider, setProvider] = useState<Provider[] | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -20,10 +20,13 @@ const Page = () => {
       try {
         const data = await fetchProvider();
         if (isMounted) {
-          setProvider(data);
+          setProvider(data || []);
         }
       } catch (error) {
         console.error("Error loading Provider:", error);
+        if (isMounted) {
+          setProvider([]);
+        }
       }
     };
     loadProvider();
@@ -31,14 +34,6 @@ const Page = () => {
       isMounted = false;
     };
   }, []);
-
-  if (!provider) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-white">
-        <div className="loader"></div>
-      </div>
-    );
-  }
 
   const handleExport = () => {
     if (!provider || provider.length === 0) {

@@ -1,5 +1,21 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Authentication & Authorization
+
+This project uses Clerk for authentication and implements role-based access control (RBAC) with three roles:
+- **Customer**: Can view products and manage their own cart/orders
+- **Staff**: Can access admin dashboard and manage products/orders (CRU, no Delete)
+- **Admin**: Full access to all modules
+
+### Required Dependencies
+
+For webhook functionality, install:
+```bash
+npm install svix
+```
+
+See [CLERK_DASHBOARD_GUIDE.md](./CLERK_DASHBOARD_GUIDE.md) for detailed setup instructions.
+
 ## Getting Started
 
 First, run the development server:

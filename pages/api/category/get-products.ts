@@ -1,4 +1,4 @@
-// File: getProductsOfCategory.ts
+// Get products of category (Public - Guest can view)
 import { NextApiRequest, NextApiResponse } from "next";
 import { getProductsOfCategory } from "@/lib/actions/category.action";
 

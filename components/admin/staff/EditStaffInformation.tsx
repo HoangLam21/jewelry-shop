@@ -391,7 +391,7 @@ const EditStaffInformation = () => {
           <InputEdit
             titleInput="Salary"
             width="w-full"
-            name="earning"
+            name="salary"
             onChange={handleChange}
             placeholder="Enter Salary"
             value={updateStaff ? updateStaff.salary : staff.salary}

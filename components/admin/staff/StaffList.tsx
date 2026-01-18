@@ -35,7 +35,7 @@ const StaffList = ({
   staffs,
   setStaffs,
 }: {
-  staffs: Staff[];
+  staffs: Staff[] | null;
   setStaffs: any;
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,7 +43,6 @@ const StaffList = ({
   const rowsPerPage = 8;
   const [filterOption, setFilterOption] = useState("");
   const [onDelete, setOnDelete] = useState(false);
-  const totalResult = staffs.length;
   const [deleteStaffId, setDeleteStaffId] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<{
     key: SortableKeys;
@@ -53,6 +52,16 @@ const StaffList = ({
     direction: "ascending",
   });
   type SortableKeys = "_id" | "gender" | "salary" | "position";
+
+  if (!staffs || staffs === null) {
+    return (
+      <div className="w-full flex flex-col p-4 rounded-md shadow-sm items-center justify-center min-h-[400px]">
+        <div className="loader"></div>
+      </div>
+    );
+  }
+
+  const totalResult = staffs.length;
 
   const getValueByKey = (item: (typeof staffs)[0], key: SortableKeys) => {
     switch (key) {
@@ -103,12 +112,12 @@ const StaffList = ({
     return matchesSearch;
   });
 
-  const totalPages = Math.ceil(staffs.length / rowsPerPage);
+  const totalPages = Math.ceil(filterData.length / rowsPerPage);
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const currentData = staffs.slice(startIndex, endIndex);
+  const currentData = filterData.slice(startIndex, endIndex);
 
-  const dataLength = staffs.length;
+  const dataLength = filterData.length;
   const itemsPerPage = 8;
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;

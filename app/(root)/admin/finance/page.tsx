@@ -18,22 +18,26 @@ interface labelProps {
 }
 
 const Page = () => {
-  const [orderData, setOrderData] = useState<Order[] | null>([]);
-  const [importData, setImportData] = useState<any[] | null>([]);
-  const [financeData, setFinanceData] = React.useState<CretaeFinance[] | null>(
-    []
-  );
+  const [orderData, setOrderData] = useState<Order[] | null>(null);
+  const [importData, setImportData] = useState<any[] | null>(null);
+  const [financeData, setFinanceData] = React.useState<CretaeFinance[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     let isMounted = true;
+    setIsLoading(true);
+    
     const loadOrder = async () => {
       try {
         const data = await fetchOrder();
-
         if (isMounted) {
-          setOrderData(data);
+          setOrderData(data || []);
         }
       } catch (error) {
-        console.error("Error loading Provider:", error);
+        console.error("Error loading Order:", error);
+        if (isMounted) {
+          setOrderData([]);
+        }
       }
     };
 
@@ -41,65 +45,66 @@ const Page = () => {
       try {
         const data = await fetchFinance();
         if (isMounted) {
-          setFinanceData(data as CretaeFinance[]);
+          setFinanceData((data || []) as CretaeFinance[]);
         }
       } catch (error) {
-        console.error("Error loading Provider:", error);
+        console.error("Error loading Finance:", error);
+        if (isMounted) {
+          setFinanceData([]);
+        }
       }
     };
 
-    loadFinance();
-    loadOrder();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let isMounted = true;
     const loadImport = async () => {
       try {
         const data = await fetchImport();
-
         if (isMounted) {
-          setImportData(data);
+          setImportData(data || []);
         }
       } catch (error) {
-        console.error("Error loading Provider:", error);
+        console.error("Error loading Import:", error);
+        if (isMounted) {
+          setImportData([]);
+        }
       }
     };
-    loadImport();
+
+    // Load all data in parallel
+    Promise.all([loadOrder(), loadFinance(), loadImport()]).then(() => {
+      if (isMounted) {
+        setIsLoading(false);
+      }
+    });
+
     return () => {
       isMounted = false;
     };
   }, []);
 
-  if (!orderData || !financeData || !importData) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-white">
-        <div className="loader"></div>
-      </div>
-    );
-  }
-
-  const result = financeData.reduce((acc: any, item) => {
-    const date = new Date(item.date).toISOString().split("T")[0];
-    if (!acc[date]) {
-      acc[date] = { date, income: 0, outcome: 0 };
+  // Tính toán formattedData và total - phải đặt trước return có điều kiện
+  const result = React.useMemo(() => {
+    if (!financeData || financeData.length === 0) {
+      return {};
     }
+    return financeData.reduce((acc: any, item) => {
+      const date = new Date(item.date).toISOString().split("T")[0];
+      if (!acc[date]) {
+        acc[date] = { date, income: 0, outcome: 0 };
+      }
 
-    // Cộng dồn giá trị dựa trên type (income hoặc outcome)
-    if (item.type === "income") {
-      acc[date].income += item.value;
-    } else if (item.type === "outcome") {
-      acc[date].outcome += item.value;
-    }
+      // Cộng dồn giá trị dựa trên type (income hoặc outcome)
+      if (item.type === "income") {
+        acc[date].income += item.value;
+      } else if (item.type === "outcome") {
+        acc[date].outcome += item.value;
+      }
 
-    return acc;
-  }, {});
+      return acc;
+    }, {});
+  }, [financeData]);
 
   // Chuyển đổi đối tượng thành mảng
-  const formattedData = Object.values(result);
+  const formattedData = React.useMemo(() => Object.values(result), [result]);
 
   const total = React.useMemo(
     () => ({
@@ -108,6 +113,14 @@ const Page = () => {
     }),
     [formattedData]
   );
+
+  if (isLoading || orderData === null || financeData === null || importData === null) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-white">
+        <div className="loader"></div>
+      </div>
+    );
+  }
   const labelData: labelProps[] = [
     {
       icon: "solar:sale-outline",

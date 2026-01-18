@@ -1,7 +1,8 @@
 import { updateVoucher } from "@/lib/actions/voucher.action";
 import { NextApiRequest, NextApiResponse } from "next";
+import { withStaffOrAdmin, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse, auth: ApiAuthResult) {
   const { id } = req.query;
 
   if (!id || typeof id !== "string") {
@@ -20,3 +21,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: error.message });
   }
 }
+
+export default withStaffOrAdmin(handler);

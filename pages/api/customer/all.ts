@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { getCustomers } from "@/lib/actions/customer.action";
+import { withStaffOrAdmin, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse, auth: ApiAuthResult) {
       if (req.method === "GET") {
         try {
           const customers = await getCustomers();
@@ -14,3 +15,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(405).json({ error: "Method not allowed" });
       }
 }
+
+export default withStaffOrAdmin(handler);

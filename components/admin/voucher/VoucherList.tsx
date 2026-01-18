@@ -42,15 +42,6 @@ const VoucherList = ({
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
   const [deleteVoucherId, setDeleteVoucherId] = useState<string | null>(null);
-
-  if (!voucherList) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-white">
-        <div className="loader"></div>
-      </div>
-    );
-  }
-
   const [sortConfig, setSortConfig] = useState<{
     key: SortableKeys;
     direction: "ascending" | "descending";
@@ -59,6 +50,14 @@ const VoucherList = ({
     direction: "ascending",
   });
   type SortableKeys = "id" | "name" | "expDate" | "discount";
+
+  if (!voucherList || voucherList === null) {
+    return (
+      <div className="w-full flex flex-col p-4 rounded-md shadow-sm items-center justify-center min-h-[400px]">
+        <div className="loader"></div>
+      </div>
+    );
+  }
 
   const getValueByKey = (item: Voucher, key: SortableKeys) => {
     switch (key) {

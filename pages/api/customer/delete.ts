@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { deleteCustomer } from "@/lib/actions/customer.action";
+import { withAdmin, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse, auth: ApiAuthResult) {
   if (req.method === "DELETE") {
     const { id } = req.query; // Lấy ID từ query params
 
@@ -24,3 +25,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Method not allowed" });
   }
 }
+
+export default withAdmin(handler);

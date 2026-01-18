@@ -23,7 +23,7 @@ const ScheduleList = ({
   setSchedules,
   openEditForm,
 }: {
-  schedules: Schedule[];
+  schedules: Schedule[] | null;
   setSchedules: any;
   openEditForm: (schedule: Schedule) => void;
 }) => {
@@ -32,7 +32,6 @@ const ScheduleList = ({
   const rowsPerPage = 8;
   const [filterOption, setFilterOption] = useState("");
   const [onDelete, setOnDelete] = useState(false);
-  const totalResult = schedules.length;
   const [deleteScheduleId, setDeleteScheduleId] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<{
     key: SortableKeys;
@@ -42,6 +41,16 @@ const ScheduleList = ({
     direction: "ascending",
   });
   type SortableKeys = "staff" | "shift" | "date";
+
+  if (!schedules || schedules === null) {
+    return (
+      <div className="w-full h-full flex flex-col p-4 rounded-md shadow-sm justify-between items-center justify-center min-h-[400px]">
+        <div className="loader"></div>
+      </div>
+    );
+  }
+
+  const totalResult = schedules.length;
 
   const getValueByKey = (item: (typeof schedules)[0], key: SortableKeys) => {
     switch (key) {
@@ -195,11 +204,6 @@ const ScheduleList = ({
       <div className="p-4 mt-4 text-sm flex items-center justify-center md:justify-between text-gray-500 dark:text-dark-360">
         <PaginationUI paginationUI={paginationUI} />
       </div>
-      {schedules ? null : (
-        <div className="flex-1 flex items-center justify-center ">
-          <div className="loader"></div>
-        </div>
-      )}
     </div>
   );
 };

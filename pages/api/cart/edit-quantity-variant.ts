@@ -1,10 +1,12 @@
 // Edit the quantity of a product variant in a cart
 import { NextApiRequest, NextApiResponse } from "next";
 import { editProductVariantQuantityInCart } from "@/lib/actions/cart.action";
+import { withCustomerOrAbove, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(
+async function handler(
     req: NextApiRequest,
-    res: NextApiResponse
+    res: NextApiResponse,
+    auth: ApiAuthResult
 ) {
     if (req.method === "PATCH") {
         try {
@@ -34,3 +36,5 @@ export default async function handler(
         return res.status(405).json({ error: "Method not allowed" });
     }
 }
+
+export default withCustomerOrAbove(handler);

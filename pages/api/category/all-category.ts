@@ -1,6 +1,6 @@
-// Get all categories
+// Get all categories (Public - Guest can view)
 import { NextApiRequest, NextApiResponse } from "next";
-import { getCategories } from "@/lib/actions/category.action"; // Đảm bảo đường dẫn chính xác
+import { getCategories } from "@/lib/actions/category.action";
 
 export default async function handler(
     req: NextApiRequest,

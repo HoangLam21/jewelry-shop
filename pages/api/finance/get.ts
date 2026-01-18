@@ -1,10 +1,12 @@
 // Get a finance record by ID
 import { NextApiRequest, NextApiResponse } from "next";
-import { getFinanceById } from "@/lib/actions/finance.action"; // Đảm bảo đường dẫn chính xác
+import { getFinanceById } from "@/lib/actions/finance.action";
+import { withAdmin, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(
+async function handler(
     req: NextApiRequest,
-    res: NextApiResponse
+    res: NextApiResponse,
+    auth: ApiAuthResult
 ) {
     if (req.method === "GET") {
         try {
@@ -21,3 +23,5 @@ export default async function handler(
         return res.status(405).json({ error: "Method not allowed" });
     }
 }
+
+export default withAdmin(handler);

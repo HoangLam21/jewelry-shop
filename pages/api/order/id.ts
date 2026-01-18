@@ -1,11 +1,12 @@
 // Get order by ID
 import { NextApiRequest, NextApiResponse } from "next";
-import { getOrderById } from "@/lib/actions/order.action"; // Đảm bảo đường dẫn chính xác
-import id from "../customer/id";
+import { getOrderById } from "@/lib/actions/order.action";
+import { withStaffOrAdmin, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(
+async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
+  auth: ApiAuthResult
 ) {
   if (req.method === "GET") {
     try {
@@ -24,3 +25,5 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 }
+
+export default withStaffOrAdmin(handler);

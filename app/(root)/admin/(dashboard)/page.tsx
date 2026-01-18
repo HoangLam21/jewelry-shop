@@ -6,7 +6,7 @@ import { fetchOrder } from "@/lib/service/order.service";
 import React, { useEffect, useState } from "react";
 
 const Page = () => {
-  const [orderData, setOrderData] = useState<Order[] | null>([]);
+  const [orderData, setOrderData] = useState<Order[] | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -15,10 +15,13 @@ const Page = () => {
         const data = await fetchOrder();
 
         if (isMounted) {
-          setOrderData(data);
+          setOrderData(data || []);
         }
       } catch (error) {
-        console.error("Error loading Provider:", error);
+        console.error("Error loading Order:", error);
+        if (isMounted) {
+          setOrderData([]);
+        }
       }
     };
     loadOrder();
@@ -27,13 +30,6 @@ const Page = () => {
     };
   }, []);
 
-  if (!orderData) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-white">
-        <div className="loader"></div>
-      </div>
-    );
-  }
   return (
     <div className="flex flex-col w-full h-full p-4 gap-4">
       <div>

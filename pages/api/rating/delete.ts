@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { deleteRating } from "@/lib/actions/rating.action"; // Adjust path as needed
+import { deleteRating } from "@/lib/actions/rating.action";
+import { withCustomerOrAbove, ApiAuthResult } from "@/lib/utils/api-auth";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse, auth: ApiAuthResult) {
   const { id } = req.query;
 
   if (req.method === "DELETE") {
@@ -20,3 +21,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Method not allowed" });
   }
 }
+
+export default withCustomerOrAbove(handler);

@@ -19,10 +19,10 @@ const columns = [
   },
 ];
 
-const TopSeller = ({ orderData }: { orderData: Order[] }) => {
-  if (!orderData) {
+const TopSeller = ({ orderData }: { orderData: Order[] | null }) => {
+  if (!orderData || orderData === null) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-white">
+      <div className="overflow-x-auto shadow-md rounded-lg bg-white flex items-center justify-center min-h-[400px]">
         <div className="loader"></div>
       </div>
     );

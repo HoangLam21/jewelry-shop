@@ -45,14 +45,13 @@ const ImportList = ({
   importData,
   setImportData,
 }: {
-  importData: any[];
+  importData: any[] | null;
   setImportData: any;
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
   const [deleteOrderId, setDeleteImportId] = useState<string | null>(null);
-
   const [sortConfig, setSortConfig] = useState<{
     key: SortableKeys;
     direction: "ascending" | "descending";
@@ -61,6 +60,14 @@ const ImportList = ({
     direction: "ascending",
   });
   type SortableKeys = "id" | "createBy" | "total" | "status" | "number";
+
+  if (!importData || importData === null) {
+    return (
+      <div className="w-full flex flex-col p-4 rounded-md shadow-sm items-center justify-center min-h-[400px]">
+        <div className="loader"></div>
+      </div>
+    );
+  }
 
   const getValueByKey = (item: (typeof importData)[0], key: SortableKeys) => {
     switch (key) {

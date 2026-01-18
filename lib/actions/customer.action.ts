@@ -55,6 +55,20 @@ export const getCustomerById = async (id: string) => {
   }
 };
 
+export const getCustomerByClerkId = async (clerkId: string) => {
+  try {
+    connectToDatabase();
+    const customer = await Customer.findOne({ clerkId });
+    if (!customer) {
+      throw new Error("Customer not found");
+    }
+    return customer;
+  } catch (error) {
+    console.log("Error fetching Customer by Clerk ID: ", error);
+    throw new Error("Failed to fetch customer");
+  }
+};
+
 export const updateCustomer = async (
   id: string,
   data: Partial<{

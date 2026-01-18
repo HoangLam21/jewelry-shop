@@ -44,14 +44,13 @@ const OrderList = ({
   orderData,
   setOrderData,
 }: {
-  orderData: any[];
+  orderData: any[] | null;
   setOrderData: any;
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
-
   const [sortConfig, setSortConfig] = useState<{
     key: SortableKeys;
     direction: "ascending" | "descending";
@@ -60,6 +59,14 @@ const OrderList = ({
     direction: "ascending",
   });
   type SortableKeys = "id" | "createBy" | "total" | "status" | "number";
+
+  if (!orderData || orderData === null) {
+    return (
+      <div className="w-full flex flex-col p-4 rounded-md shadow-sm items-center justify-center min-h-[400px]">
+        <div className="loader"></div>
+      </div>
+    );
+  }
 
   const getValueByKey = (item: (typeof orderData)[0], key: SortableKeys) => {
     switch (key) {

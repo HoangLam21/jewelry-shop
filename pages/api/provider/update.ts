@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { updateProvider } from "@/lib/actions/provider.action";
+import { withStaffOrAdmin, ApiAuthResult } from "@/lib/utils/api-auth";
 
 export const config = {
   api: {
@@ -7,7 +8,7 @@ export const config = {
   },
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse, auth: ApiAuthResult) {
   const { id } = req.query;
 
   if (req.method === "PUT") {
@@ -32,3 +33,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Method not allowed" });
   }
 }
+
+export default withStaffOrAdmin(handler);

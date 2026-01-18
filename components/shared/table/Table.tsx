@@ -1,6 +1,5 @@
 import React from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import sortIcon from "@iconify/icons-mi/sort";
 
 const Table = ({
   columns,
@@ -31,7 +30,7 @@ const Table = ({
                   onClick={() => onSort(col.accessor)} // Pass column key for sorting
                 >
                   <Icon
-                    icon={sortIcon}
+                    icon="mi:sort"
                     className="text-gray-800 dark:text-white"
                     width={18}
                     height={18}

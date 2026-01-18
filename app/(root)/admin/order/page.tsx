@@ -9,8 +9,7 @@ import * as XLSX from "xlsx";
 
 const Page = () => {
   const router = useRouter();
-
-  const [orderData, setOrderData] = useState<Order[] | null>([]);
+  const [orderData, setOrderData] = useState<Order[] | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -19,10 +18,13 @@ const Page = () => {
         const data = await fetchOrder();
 
         if (isMounted) {
-          setOrderData(data);
+          setOrderData(data || []);
         }
       } catch (error) {
-        console.error("Error loading Provider:", error);
+        console.error("Error loading Order:", error);
+        if (isMounted) {
+          setOrderData([]);
+        }
       }
     };
     loadOrder();
@@ -30,14 +32,6 @@ const Page = () => {
       isMounted = false;
     };
   }, []);
-
-  if (!orderData) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-white">
-        <div className="loader"></div>
-      </div>
-    );
-  }
 
   console.log(orderData, "this iss orrder data");
 
