@@ -4,8 +4,9 @@ import Description from "./Description";
 import AdditionalInformation from "./AdditonalInformation";
 import Reviews from "./Reviews";
 import { ProductData } from "@/components/admin/product/ProductList";
+import { ProductResponse } from "@/dto/ProductDTO";
 
-const DetailProduct = ({ item }: { item: ProductData }) => {
+const DetailProduct = ({ item }: { item: ProductResponse }) => {
   const [activeTitle, setActiveTitle] = useState("DESCRIPTION"); // Track the active title
   //const title = ["DESCRIPTION", "ADDITIONAL INFORMATION", "REVIEWS"];
   const title = ["DESCRIPTION", "REVIEWS"];

@@ -1,31 +1,33 @@
 "use client";
 import ProductFrame from "@/components/shared/card/ProductCard";
 import TableSearch from "@/components/shared/table/TableSearch";
-import { ProductsData } from "@/constants/data";
-import { PaginationProps } from "@/types/pagination";
-import PaginationUI from "@/types/pagination/Pagination";
 import React, { useEffect, useState } from "react";
 import ProductDetail from "./ProductDetail";
 import ProductEdit from "./ProductEdit";
 import Format from "@/components/shared/card/ConfirmCard";
 import { deleteProductById, fetchProduct } from "@/lib/service/product.service";
-import { FileContent, ProductResponse } from "@/dto/ProductDTO";
+import { FileContent } from "@/dto/ProductDTO";
 import { formatCurrency } from "@/lib/utils";
 import { fetchProvider } from "@/lib/service/provider.service";
 import {
   SelectionListProduct,
-  useProductManageContext
+  useProductManageContext,
 } from "@/contexts/ProductManageContext";
 import { fetchVoucher } from "@/lib/service/voucher.service";
+
 export interface Sizes {
   size: string;
   stock: number;
+  _id?: string;
 }
+
 export interface Variant {
   material: string;
   sizes: Sizes[];
   addOn: number;
+  _id?: string;
 }
+
 export interface ProductData {
   id: string;
   image: string;
@@ -37,8 +39,37 @@ export interface ProductData {
   vouchers: string;
   provider: string;
   category: string;
-  variants: Variant[];
   categoryId: string;
+  variants: Variant[];
+}
+
+interface Provider {
+  _id: string;
+  name: string;
+}
+
+interface Voucher {
+  _id: string;
+  name: string;
+  discount: number;
+}
+
+interface Category {
+  _id: string;
+  name: string;
+}
+
+interface ProductResponse {
+  _id: string;
+  files: FileContent[];
+  name: string;
+  cost: number;
+  collections: string;
+  description: string;
+  vouchers?: Voucher[];
+  provider?: Provider;
+  category?: Category;
+  variants: Variant[];
 }
 
 export const defaultDetailProduct: ProductData = {
@@ -59,47 +90,51 @@ export const defaultDetailProduct: ProductData = {
       sizes: [
         {
           size: "",
-          stock: 0
-        }
+          stock: 0,
+        },
       ],
-      addOn: 0
-    }
-  ]
+      addOn: 0,
+    },
+  ],
 };
 
-interface props {
+interface ProductListProps {
   list: ProductData[];
   setList: React.Dispatch<React.SetStateAction<ProductData[]>>;
 }
 
-const ProductList = ({ list, setList }: props) => {
-  const { setProviderList, setVoucherList, providerList } =
-    useProductManageContext();
+const ProductList = ({ list, setList }: ProductListProps) => {
+  const { setProviderList, setVoucherList } = useProductManageContext();
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [onDelete, setOnDelete] = useState(false);
-  const [onEdit, setOnEdit] = useState(false);
-
-  const [onDetail, setOnDetail] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [onDelete, setOnDelete] = useState<boolean>(false);
+  const [onEdit, setOnEdit] = useState<boolean>(false);
+  const [onDetail, setOnDetail] = useState<boolean>(false);
   const [detailItem, setDetailItem] =
     useState<ProductData>(defaultDetailProduct);
+
   useEffect(() => {
     const fetchDataProvider = async () => {
       try {
         const result = await fetchProvider();
 
         if (result) {
-          const provider: SelectionListProduct[] = result.map((item: any) => ({
-            id: item._id, // Gán giá trị _id vào id
-            name: item.name // Gán giá trị name
-          }));
+          const provider: SelectionListProduct[] = result.map(
+            (item: Provider) => ({
+              id: item._id,
+              name: item.name,
+            })
+          );
 
           setProviderList(provider);
         }
-      } catch (err: any) {
-        console.error("Error fetching data:", err);
-        const errorMessage = err?.message || "An unexpected error occurred.";
-        alert(`Error fetching data: ${errorMessage}`);
+      } catch (error) {
+        console.error("Error fetching provider data:", error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.";
+        alert(`Error fetching provider data: ${errorMessage}`);
       }
     };
 
@@ -108,56 +143,66 @@ const ProductList = ({ list, setList }: props) => {
         const result = await fetchVoucher();
 
         if (result) {
-          const voucher: SelectionListProduct[] = result.map((item: any) => ({
-            id: item._id,
-            name: item.name
-          }));
+          const voucher: SelectionListProduct[] = result.map(
+            (item: Voucher) => ({
+              id: item._id,
+              name: item.name,
+            })
+          );
           setVoucherList(voucher);
         }
-      } catch (err: any) {
-        console.error("Error fetching data:", err);
-        const errorMessage = err?.message || "An unexpected error occurred.";
-        alert(`Error fetching data: ${errorMessage}`);
+      } catch (error) {
+        console.error("Error fetching voucher data:", error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.";
+        alert(`Error fetching voucher data: ${errorMessage}`);
       }
     };
+
     fetchDataProvider();
     fetchDataVoucher();
-  }, []);
+  }, [setProviderList, setVoucherList]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const result = await fetchProduct();
         console.log(result, "check");
+
         if (result) {
-          const data: ProductData[] = result.map((item: any) => ({
+          const data: ProductData[] = result.map((item: ProductResponse) => ({
             id: item._id,
-            image: item.files[0].url,
+            image: item.files[0]?.url || "/assets/images/avatar.jpg",
             imageInfo: item.files,
             productName: item.name,
             price: formatCurrency(item.cost),
             collection: item.collections,
             description: item.description,
             vouchers: item.vouchers?.[item.vouchers.length - 1]?._id || "",
-            provider: item.provider ? item.provider._id : "",
-            category: item.category ? item.category.name : "No category",
-            categoryId: item.category ? item.category._id : "No category",
-            variants: item.variants
+            provider: item.provider?._id || "",
+            category: item.category?.name || "No category",
+            categoryId: item.category?._id || "",
+            variants: item.variants,
           }));
           setList(data);
         }
-      } catch (err: any) {
-        console.error("Error fetching data:", err);
-        const errorMessage = err?.message || "An unexpected error occurred.";
-        alert(`Error fetching data: ${errorMessage}`);
+      } catch (error) {
+        console.error("Error fetching product data:", error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.";
+        alert(`Error fetching product data: ${errorMessage}`);
       }
     };
 
     fetchData();
-  }, []);
-  const filterData = list.filter((item) => {
+  }, [setList]);
+
+  const filterData: ProductData[] = list.filter((item: ProductData) => {
     const lowerCaseQuery = searchQuery.toLowerCase();
-    // Lọc theo searchQuery
     const matchesSearch =
       item.productName.toLowerCase().includes(lowerCaseQuery) ||
       item.id.toLowerCase().includes(lowerCaseQuery) ||
@@ -167,10 +212,11 @@ const ProductList = ({ list, setList }: props) => {
   });
 
   const handleConfirmDelete = (id: string) => {
-    const detail = filterData.find((item) => item.id === id);
+    const detail = filterData.find((item: ProductData) => item.id === id);
     if (detail) setDetailItem(detail);
     setOnDelete(true);
   };
+
   const handleCancelConfirm = () => {
     setOnDelete(false);
   };
@@ -179,23 +225,28 @@ const ProductList = ({ list, setList }: props) => {
     try {
       const result = await deleteProductById(id);
       if (result) {
-        const detail = filterData.find((item) => item.id === id);
+        const detail = filterData.find((item: ProductData) => item.id === id);
         if (detail)
-          setList((prev) => prev.filter((item) => item.id !== detail.id));
+          setList((prev: ProductData[]) =>
+            prev.filter((item: ProductData) => item.id !== detail.id)
+          );
         setOnDelete(false);
         alert("Delete product successfully.");
       } else {
         alert("Can't delete product.");
       }
-    } catch (err: any) {
-      console.error("Error delete data:", err);
-      const errorMessage = err?.message || "An unexpected error occurred.";
-      alert(`Error delete data: ${errorMessage}`);
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+      alert(`Error deleting product: ${errorMessage}`);
     }
   };
 
   const handleEdit = (id: string) => {
-    const detail = filterData.find((item) => item.id === id);
+    const detail = filterData.find((item: ProductData) => item.id === id);
     if (detail) {
       const item: ProductData = {
         id: detail.id,
@@ -209,7 +260,7 @@ const ProductList = ({ list, setList }: props) => {
         provider: detail.provider,
         category: detail.category,
         categoryId: detail.categoryId,
-        variants: detail.variants
+        variants: detail.variants,
       };
       setDetailItem(item);
     }
@@ -219,7 +270,7 @@ const ProductList = ({ list, setList }: props) => {
   };
 
   const handleDetail = (id: string) => {
-    const detail = filterData.find((item) => item.id === id);
+    const detail = filterData.find((item: ProductData) => item.id === id);
     if (detail) setDetailItem(detail);
     console.log(detail, "detail");
     setOnDetail(true);
@@ -230,12 +281,13 @@ const ProductList = ({ list, setList }: props) => {
     setOnDetail(value);
     setOnEdit(value);
   };
+
   return (
     <>
       <div className="flex w-full flex-col p-4 rounded-md shadow-sm">
         <TableSearch onSearch={setSearchQuery} onSort={() => {}} />
         <div className="flex flex-row flex-wrap items-start justify-items-stretch gap-7 mt-6 max-h-[550px] h-[550px] overflow-x-auto container">
-          {filterData.map((item) => (
+          {filterData.map((item: ProductData) => (
             <ProductFrame
               key={item.id}
               param={item}

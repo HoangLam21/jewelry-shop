@@ -1,18 +1,11 @@
 import LabelInformation from "@/components/shared/label/LabelInformation";
 import TitleSession from "@/components/shared/label/TitleSession";
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { format } from "date-fns";
-import { useParams, useRouter } from "next/navigation";
-import { Icon } from "@iconify/react/dist/iconify.js";
-import Link from "next/link";
+import { useParams } from "next/navigation";
 import { PaginationProps } from "@/types/pagination";
 import TableSearch from "@/components/shared/table/TableSearch";
 import Table from "@/components/shared/table/Table";
 import PaginationUI from "@/types/pagination/Pagination";
-import LabelStatus from "@/components/shared/label/LabelStatus";
-import { getProviderById } from "@/lib/service/provider.service";
-import { categoryData, Providers } from "@/constants/data";
 import {
   CategoryResponse,
   CreateCategory,
@@ -22,7 +15,6 @@ import MyButton from "@/components/shared/button/MyButton";
 import InputEdit from "@/components/shared/input/InputEdit";
 import { defaultCategory } from "./CategoryList";
 import InputSelection from "@/components/shared/input/InputSelection";
-import Format from "@/components/shared/card/ConfirmCard";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   addProductToCategory,
@@ -93,7 +85,7 @@ const EditCategoryInformation = () => {
             name: result.name,
             hot: result.hot,
             description: result.description,
-            products: result.products.map((item: any, index: number) => ({
+            products: result.products.map((item: ProductResponse) => ({
               _id: item._id,
               fullName: item.name ? item.name : "Unknown name",
               cost: item.cost ? item.cost : 0,
@@ -113,6 +105,11 @@ const EditCategoryInformation = () => {
 
     fetchData();
   }, [id]);
+
+  const formatCurrency = (value: number): string => {
+    return new Intl.NumberFormat("vi-VN").format(value) + " vnd";
+  };
+
   useEffect(() => {
     const fetchDataProduct = async () => {
       try {
@@ -135,12 +132,11 @@ const EditCategoryInformation = () => {
 
           setProductList(data);
         }
-      } catch (err: any) {
-        console.error("Error fetching data:", err);
-        const errorMessage = err?.message || "An unexpected error occurred.";
-        alert(`Error fetching data: ${errorMessage}`);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
     };
+
     fetchDataProduct();
   }, []);
 
@@ -152,20 +148,12 @@ const EditCategoryInformation = () => {
       });
     }
   };
-  const handleSelect = (isChecked: any, id: string) => {
-    setSelectedIds((prevSelected) => {
-      if (isChecked) {
-        // Thêm ID vào danh sách nếu chưa có
-        return [...prevSelected, id];
-      } else {
-        // Loại bỏ ID khỏi danh sách nếu đã có
-        return prevSelected.filter((productId) => productId !== id);
-      }
-    });
-  };
-
-  const formatCurrency = (value: number): string => {
-    return new Intl.NumberFormat("vi-VN").format(value) + " vnd";
+  const handleSelect = (isChecked: boolean | "indeterminate", id: string) => {
+    setSelectedIds((prev) =>
+      isChecked === true
+        ? [...prev, id]
+        : prev.filter((productId) => productId !== id)
+    );
   };
 
   const requestSort = (key: SortableKeys) => {
@@ -250,9 +238,14 @@ const EditCategoryInformation = () => {
       } else {
         alert("Can't update category.");
       }
-    } catch (err: any) {
-      console.error("Error update data:", err);
-      const errorMessage = err?.message || "An unexpected error occurred.";
+    } catch (error) {
+      console.error("Error update data:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
       alert(`Error update data: ${errorMessage}`);
     }
   };

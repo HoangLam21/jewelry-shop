@@ -33,9 +33,8 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function Chart() {
-  const [financeData, setFinanceData] = React.useState<CretaeFinance[] | null>(
-    []
-  );
+  const [financeData, setFinanceData] = React.useState<CretaeFinance[]>([]);
+
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("income");
 
@@ -58,27 +57,30 @@ export function Chart() {
     };
   }, []);
 
-  if (!financeData) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-white">
-        <div className="loader"></div>
-      </div>
-    );
-  }
+  // if (!financeData) {
+  //   return (
+  //     <div className="flex h-screen w-screen items-center justify-center bg-white">
+  //       <div className="loader"></div>
+  //     </div>
+  //   );
+  // }
 
   const groupByDate = (data: CretaeFinance[]) => {
-    const result = data.reduce((acc, item) => {
-      const date = new Date(item.date).toISOString().split("T")[0]; // Extract date (yyyy-mm-dd)
-      if (!acc[date]) {
-        acc[date] = { date, income: 0, outcome: 0 };
-      }
-      if (item.type === "income") {
-        acc[date].income += item.value;
-      } else if (item.type === "outcome") {
-        acc[date].outcome += item.value;
-      }
-      return acc;
-    }, {} as Record<string, { date: string; income: number; outcome: number }>);
+    const result = data.reduce(
+      (acc, item) => {
+        const date = new Date(item.date).toISOString().split("T")[0]; // Extract date (yyyy-mm-dd)
+        if (!acc[date]) {
+          acc[date] = { date, income: 0, outcome: 0 };
+        }
+        if (item.type === "income") {
+          acc[date].income += item.value;
+        } else if (item.type === "outcome") {
+          acc[date].outcome += item.value;
+        }
+        return acc;
+      },
+      {} as Record<string, { date: string; income: number; outcome: number }>
+    );
 
     return Object.values(result);
   };

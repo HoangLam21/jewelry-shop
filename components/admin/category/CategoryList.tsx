@@ -1,26 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
-import Headers from "@/components/shared/header/Headers";
 import TableSearch from "@/components/shared/table/TableSearch";
 import { format } from "date-fns";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import {
-  Menubar,
-  MenubarMenu,
-  MenubarTrigger,
-  MenubarContent,
-  MenubarItem,
-  MenubarSeparator
-} from "@radix-ui/react-menubar";
-// import {Pagination} from "@/components/ui/pagination";
+
 import { PaginationProps } from "@/types/pagination";
 import Table from "@/components/shared/table/Table";
 import PaginationUI from "@/types/pagination/Pagination";
-import { Button } from "@/components/ui/button";
 import {
   deleteCategoryById,
-  fetchCategory
+  fetchCategory,
 } from "@/lib/service/category.service";
 import { CategoryResponse } from "@/dto/CategoryDTO";
 import Format from "@/components/shared/card/ConfirmCard";
@@ -30,7 +20,7 @@ const columns = [
   { header: "Name", accessor: "name" },
   { header: "created At", accessor: "createAt" },
   { header: "Hot", accessor: "hot" },
-  { header: "Action", accessor: "action" }
+  { header: "Action", accessor: "action" },
 ];
 export const defaultCategory: CategoryResponse = {
   _id: "default_id",
@@ -41,10 +31,10 @@ export const defaultCategory: CategoryResponse = {
     {
       _id: "product_1",
       fullName: "Default Product 1",
-      cost: 0
-    }
+      cost: 0,
+    },
   ],
-  createAt: new Date()
+  createAt: new Date(),
 };
 
 const CategoryList = () => {
@@ -71,7 +61,7 @@ const CategoryList = () => {
     direction: "ascending" | "descending";
   }>({
     key: "_id",
-    direction: "ascending"
+    direction: "ascending",
   });
 
   type SortableKeys = "_id" | "name" | "hot" | "createdAt";
@@ -137,7 +127,7 @@ const CategoryList = () => {
     indexOfLastItem,
     indexOfFirstItem,
     totalPages: Math.ceil(filterData.length / itemsPerPage),
-    dataLength: filterData.length
+    dataLength: filterData.length,
   };
 
   const handleDelete = async (id: string) => {
@@ -150,10 +140,16 @@ const CategoryList = () => {
       } else {
         alert("Can't delete customer.");
       }
-    } catch (err: any) {
-      console.error("Error delete data:", err);
-      const errorMessage = err?.message || "An unexpected error occurred.";
+    } catch (error: unknown) {
+      console.error("Error delete data:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
       alert(`Error delete data: ${errorMessage}`);
+      setOnDelete(false);
     }
     const detail = categoryList.filter((item) => item._id !== id);
     if (detail) setCategoryList(detail);
@@ -169,10 +165,6 @@ const CategoryList = () => {
   const handleCancelConfirm = () => {
     setOnDelete(false);
   };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   if (!isMounted) {
     return null;

@@ -17,7 +17,7 @@ const AddCustomerInformation = () => {
     if (updateCustomer) {
       setUpdateCustomer({
         ...updateCustomer,
-        [e.target.name]: e.target.value
+        [e.target.name]: e.target.value,
       });
     }
   };
@@ -29,7 +29,7 @@ const AddCustomerInformation = () => {
           fullName: updateCustomer.fullName,
           phoneNumber: updateCustomer.phoneNumber,
           email: updateCustomer.email,
-          address: updateCustomer.address
+          address: updateCustomer.address,
         };
         const result = await createCustomer(data);
         if (result) {
@@ -37,9 +37,14 @@ const AddCustomerInformation = () => {
         } else {
           alert("Can't create customer.");
         }
-      } catch (err: any) {
-        console.error("Error create data:", err);
-        const errorMessage = err?.message || "An unexpected error occurred.";
+      } catch (error) {
+        console.error("Error create data:", error);
+
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.";
+
         alert(`Error create data: ${errorMessage}`);
       }
     }

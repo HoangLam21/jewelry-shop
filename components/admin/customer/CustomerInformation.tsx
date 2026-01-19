@@ -17,19 +17,19 @@ const columns = [
   {
     header: "ID",
     accessor: "id",
-    className: "hidden md:table-cell"
+    className: "hidden md:table-cell",
   },
   {
     header: "Create Date",
     accessor: "createAt",
-    className: "hidden md:table-cell"
+    className: "hidden md:table-cell",
   },
   { header: "Total", accessor: "total", className: "hidden lg:table-cell" },
   {
     header: "Create By",
     accessor: "createBy",
-    className: "hidden md:table-cell"
-  }
+    className: "hidden md:table-cell",
+  },
 ];
 
 const CustomerInformation = () => {
@@ -42,7 +42,7 @@ const CustomerInformation = () => {
     direction: "ascending" | "descending";
   }>({
     key: "id",
-    direction: "ascending"
+    direction: "ascending",
   });
   type SortableKeys = "id" | "cost" | "createBy" | "createAt";
 
@@ -68,14 +68,19 @@ const CustomerInformation = () => {
               id: order._id,
               createAt: order.createAt,
               createBy: order.staff,
-              cost: order.cost
-            }))
+              cost: order.cost,
+            })),
           };
           setDetail(data);
         }
-      } catch (err: any) {
-        console.error("Error fetching data:", err);
-        const errorMessage = err?.message || "An unexpected error occurred.";
+      } catch (error) {
+        console.error("Error fetching data:", error);
+
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.";
+
         alert(`Error fetching data: ${errorMessage}`);
       }
     };
@@ -155,7 +160,7 @@ const CustomerInformation = () => {
     indexOfLastItem,
     indexOfFirstItem,
     totalPages,
-    dataLength
+    dataLength,
   };
 
   const renderRow = (orders: OrderCustomer) => (
