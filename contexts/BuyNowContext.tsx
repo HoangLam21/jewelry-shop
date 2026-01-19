@@ -1,50 +1,63 @@
 "use client";
 import React, { createContext, useContext, useReducer } from "react";
 
-// Định nghĩa kiểu dữ liệu cho sản phẩm trong giỏ hàng
-type BuyNowItem = {
+interface Voucher {
   _id: string;
   name: string;
-  images: string;
+  discount: number;
+}
+
+interface Size {
+  size: string;
+  stock: number;
+  _id: string;
+}
+
+interface Variant {
+  material: string;
+  addOn: number;
+  sizes: Size[];
+  _id: string;
+}
+
+interface BuyNowItem {
+  _id: string;
+  name: string;
+  images?: string;
+  files?: Array<{ url: string }>;
   cost: number;
   quantity: number;
-  vouchers: any[];
-  variants: any[];
+  vouchers: Voucher[];
+  variants: Variant[];
   selectedMaterial: string;
   selectedSize: string;
-};
+}
 
-// Định nghĩa kiểu trạng thái giỏ hàng
-type BuyNowState = {
+interface BuyNowState {
   items: BuyNowItem[];
-};
+}
 
-// Định nghĩa các action có thể dispatch
 type BuyNowAction =
   | { type: "BUY_NOW"; payload: BuyNowItem }
   | { type: "RESET_BUY_NOW" };
 
-// Tạo context để lưu trữ trạng thái giỏ hàng
 const BuyNowContext = createContext<{
   stateBuyNow: BuyNowState;
   dispatchBuyNow: React.Dispatch<BuyNowAction>;
 }>({
   stateBuyNow: { items: [] },
-  dispatchBuyNow: () => null
+  dispatchBuyNow: () => null,
 });
 
-// Reducer để cập nhật trạng thái giỏ hàng dựa trên các action
 const BuyNowReducer = (
   stateBuyNow: BuyNowState,
   action: BuyNowAction
 ): BuyNowState => {
   switch (action.type) {
     case "BUY_NOW": {
-      // Thêm item vào giỏ hàng
       return { items: [...stateBuyNow.items, { ...action.payload }] };
     }
     case "RESET_BUY_NOW": {
-      // Reset giỏ hàng (xóa tất cả items)
       return { items: [] };
     }
     default:
@@ -52,12 +65,11 @@ const BuyNowReducer = (
   }
 };
 
-// BuyNowProvider cung cấp state và dispatch cho các component con
 export const BuyNowProvider: React.FC<{ children: React.ReactNode }> = ({
-  children
+  children,
 }) => {
   const [stateBuyNow, dispatchBuyNow] = useReducer(BuyNowReducer, {
-    items: []
+    items: [],
   });
 
   return (
@@ -67,5 +79,7 @@ export const BuyNowProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-// Hook custom để dễ dàng truy cập state và dispatch từ bất kỳ component nào
 export const useBuyNow = () => useContext(BuyNowContext);
+
+// Export types for use in other files
+export type { BuyNowItem, BuyNowState, BuyNowAction, Voucher, Variant, Size };

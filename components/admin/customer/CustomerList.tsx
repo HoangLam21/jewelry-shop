@@ -35,7 +35,7 @@ export const defaultDetail: Customer = {
   avatar: "",
   point: 0,
   sales: 0,
-  orders: []
+  orders: [],
 };
 
 const columns = [
@@ -43,20 +43,20 @@ const columns = [
   {
     header: "Phone",
     accessor: "phone",
-    className: "hidden md:table-cell"
+    className: "hidden md:table-cell",
   },
   {
     header: "Email",
     accessor: "email",
-    className: "hidden md:table-cell"
+    className: "hidden md:table-cell",
   },
   {
     header: "Sales",
     accessor: "sales",
-    className: "hidden lg:table-cell"
+    className: "hidden lg:table-cell",
   },
   { header: "Point", accessor: "point", className: "hidden lg:table-cell" },
-  { header: "Action", accessor: "action" }
+  { header: "Action", accessor: "action" },
 ];
 
 const CustomerList = () => {
@@ -90,16 +90,21 @@ const CustomerList = () => {
                 id: order._id,
                 createAt: order.createAt,
                 createBy: order.staff,
-                cost: order.cost
-              }))
+                cost: order.cost,
+              })),
             };
           });
 
           setDisplayedList(data);
         }
-      } catch (err: any) {
-        console.error("Error fetching data:", err);
-        const errorMessage = err?.message || "An unexpected error occurred.";
+      } catch (error) {
+        console.error("Error fetching data:", error);
+
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.";
+
         alert(`Error fetching data: ${errorMessage}`);
       }
     };
@@ -113,7 +118,7 @@ const CustomerList = () => {
     direction: "ascending" | "descending";
   }>({
     key: "id",
-    direction: "ascending"
+    direction: "ascending",
   });
   type SortableKeys = "id" | "fullname" | "point" | "sales" | "email";
   const getValueByKey = (
@@ -184,7 +189,7 @@ const CustomerList = () => {
     indexOfLastItem,
     indexOfFirstItem,
     totalPages,
-    dataLength
+    dataLength,
   };
 
   //DELETE
@@ -198,9 +203,14 @@ const CustomerList = () => {
       } else {
         alert("Can't delete customer.");
       }
-    } catch (err: any) {
-      console.error("Error delete data:", err);
-      const errorMessage = err?.message || "An unexpected error occurred.";
+    } catch (error) {
+      console.error("Error delete data:", error);
+
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
       alert(`Error delete data: ${errorMessage}`);
     }
   };
