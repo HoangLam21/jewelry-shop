@@ -1,183 +1,126 @@
 import Image from "next/image";
-import { Icon } from "@iconify/react/dist/iconify.js";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
 export default function Page() {
   return (
     <div className="text-dark100_light500">
-      <div className="bg-[#EDF1F3]  dark:bg-dark-200 h-[250px] flex justify-center items-center">
-        <div>
-          <h1 className="text-dark100_light500 font-light text-[84px]">
+      {/* HERO */}
+      <section className="h-[220px] md:h-[300px] bg-gradient-to-b from-[#EDF1F3] to-white dark:from-dark-200 dark:to-dark-100 flex items-center justify-center">
+        <div className="text-center px-4">
+          <h1 className="font-light tracking-widest text-4xl sm:text-5xl md:text-6xl lg:text-[72px]">
             CONTACT
           </h1>
-          <div className="flex justify-center items-center">
-            <Link href="/">
-              <span className="text-dark100_light500">Home</span>
+
+          <div className="flex justify-center items-center gap-2 mt-4 text-sm">
+            <Link href="/" className="hover:text-primary-100 transition-colors">
+              Home
             </Link>
-            <Icon
-              icon="solar:alt-arrow-right-line-duotone"
-              width="24"
-              height="16"
-            />
-            <Link href="/contact">
-              <span className="text-primary-100">Contact</span>
-            </Link>
+            <ChevronRight className="w-5 h-5 text-dark100_light500" />
+            <span className="text-primary-100">Contact</span>
           </div>
         </div>
-      </div>
-      {/* <div className="lg:flex mx-5 block justify-between items-center p-10">
-        <div className="lg:w-1/2 w-full space-y-6">
-          <h2 className="text-[30px] jost font-normal">CHAT WITH STAFF</h2>
-          <p>
-            For product inquiries or any questions, feel free to reach out to us
-            directly!
-          </p>
-        </div>
+      </section>
 
-        <div className="lg:w-1/2 w-full space-y-6">
-          <div className="border w-[80%] h-[800px] rounded-lg border-gray-200"></div>
-        </div>
-      </div> */}
-      <div className="lg:flex mx-5 mt-10 block justify-between p-10">
-        <div className="lg:w-1/2 w-full space-y-6">
-          <h2 className="text-[30px] jost font-normal">CONTACT INFO</h2>
-          <p>
-            Tortor dignissim convallis aenean et tortor at risus viverra
-            adipiscing.
-          </p>
+      {/* MAIN CONTENT */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 space-y-24">
+        {/* CONTACT INFO + FORM */}
+        <div className="grid lg:grid-cols-2 gap-12">
+          {/* INFO */}
+          <div className="space-y-6">
+            <h2 className="text-2xl jost font-normal">CONTACT INFO</h2>
+            <p className="text-sm sm:text-base opacity-80">
+              Tortor dignissim convallis aenean et tortor at risus viverra
+              adipiscing.
+            </p>
 
-          <div className="lg:flex block">
-            <div className="space-y-3">
-              <h3 className="font-nomal jost text-[20px] underline">OFFICE</h3>
-              <p className="font-normal text-[16px] pt-2">
-                730 Glenstone Ave 65802, Springfield, US
-              </p>
-              <p className="font-normal text-[16px]">+123 222 333 44</p>
-              <p className="font-normal text-[16px]">+123 666 777 88</p>
-              <p className="font-normal text-[16px]">ministore@yourinfo.com</p>
-            </div>
-            <div className="space-y-3 lg:ml-5">
-              <h3 className="font-nomal jost text-[20px] underline">
-                MANAGEMENT
-              </h3>
-              <p className="font-normal text-[16px] pt-2">
-                730 Glenstone Ave 65802, Springfield, US
-              </p>
-              <p className="font-normal text-[16px]">+123 222 333 44</p>
-              <p className="font-normal text-[16px]">+123 666 777 88</p>
-              <p className="font-normal text-[16px]">ministore@yourinfo.com</p>
+            <div className="grid sm:grid-cols-2 gap-8">
+              {[{ title: "OFFICE" }, { title: "MANAGEMENT" }].map(
+                (item, idx) => (
+                  <div key={idx} className="space-y-3">
+                    <h3 className="jost text-lg underline">{item.title}</h3>
+                    <p>730 Glenstone Ave 65802, Springfield, US</p>
+                    <p>+123 222 333 44</p>
+                    <p>+123 666 777 88</p>
+                    <p>ministore@yourinfo.com</p>
+                  </div>
+                )
+              )}
             </div>
           </div>
-        </div>
 
-        <div className="lg:w-1/2 w-full space-y-6">
-          <h2 className="text-[30px] jost font-normal">ANY QUESTIONS?</h2>
-          <p>Use the form below to get in touch with us.</p>
+          {/* FORM */}
+          <div className="space-y-6">
+            <h2 className="text-2xl jost font-normal">ANY QUESTIONS?</h2>
+            <p className="text-sm sm:text-base opacity-80">
+              Use the form below to get in touch with us.
+            </p>
 
-          <form className="space-y-4">
-            <div>
-              {/* <label htmlFor="full-name" className="block text-sm">
-                Your full name *
-              </label> */}
-              <input
-                type="text"
-                id="full-name"
-                placeholder="Enter your full name"
-                className="w-full p-3 border border-gray-300 rounded-none"
-                required
-              />
-            </div>
-            <div>
-              {/* <label htmlFor="email" className="block text-sm">
-                Write your email here *
-              </label> */}
-              <input
-                type="email"
-                id="email"
-                placeholder="Enter your email"
-                className="w-full p-3 border border-gray-300 rounded-none"
-                required
-              />
-            </div>
-            <div>
-              {/* <label htmlFor="phone" className="block text-sm">
-                Phone number
-              </label> */}
-              <input
-                type="tel"
-                id="phone"
-                placeholder="Enter your phone number"
-                className="w-full p-3 border border-gray-300 rounded-none"
-              />
-            </div>
-            <div>
-              {/* <label htmlFor="subject" className="block text-sm">
-                Write your subject here
-              </label> */}
-              <input
-                type="text"
-                id="subject"
-                placeholder="Enter the subject"
-                className="w-full p-3 border border-gray-300 rounded-none"
-              />
-            </div>
-            <div>
-              {/* <label htmlFor="message" className="block text-sm">
-                Write your message here *
-              </label> */}
+            <form className="space-y-4">
+              {[
+                { type: "text", placeholder: "Your full name", required: true },
+                { type: "email", placeholder: "Your email", required: true },
+                { type: "tel", placeholder: "Phone number" },
+                { type: "text", placeholder: "Subject" },
+              ].map((field, idx) => (
+                <input
+                  key={idx}
+                  type={field.type}
+                  placeholder={field.placeholder}
+                  required={field.required}
+                  className="w-full p-3 border border-gray-300 bg-transparent focus:border-primary-100 outline-none transition"
+                />
+              ))}
+
               <textarea
-                id="message"
                 placeholder="Write your message"
-                className="w-full p-3 border border-gray-300 rounded-none"
                 required
-              ></textarea>
-            </div>
-            <button
-              type="submit"
-              className="bg-primary-100 text-white py-2 px-6 rounded-none"
-            >
-              Submit
-            </button>
-          </form>
-        </div>
-      </div>
-      <div className="lg:flex mx-5 block justify-between items-center p-10 mt-10">
-        <div className="lg:w-1/2 w-full space-y-6">
-          <Image
-            src="/assets/images/d1c6a1dc3661feb5c2e1be79bdb0a6e8 (1).jpg"
-            alt=""
-            width={640}
-            height={529}
-            className="w-[640px] h-[529px] object-cover"
-          />
-        </div>
-        <div className="lg:w-1/2 w-full space-y-6">
-          <h2 className="text-[30px] jost font-normal">OUR STORES</h2>
-          <p>You can also directly buy products from our stores.</p>
+                className="w-full p-3 border border-gray-300 bg-transparent focus:border-primary-100 outline-none transition min-h-[120px]"
+              />
 
-          <div className="lg:flex block">
-            <div className="space-y-3">
-              <h3 className="font-nomal jost text-[20px] underline">USA</h3>
-              <p className="font-normal text-[16px] pt-2">
-                730 Glenstone Ave 65802, Springfield, US
-              </p>
-              <p className="font-normal text-[16px]">+123 222 333 44</p>
-              <p className="font-normal text-[16px]">+123 666 777 88</p>
-              <p className="font-normal text-[16px]">ministore@yourinfo.com</p>
-            </div>
-            <div className="space-y-3 lg:ml-5">
-              <h3 className="font-nomal jost text-[20px] underline">FRANCE</h3>
-              <p className="font-normal text-[16px] pt-2">
-                730 Glenstone Ave 65802, Springfield, US
-              </p>
-              <p className="font-normal text-[16px]">+123 222 333 44</p>
-              <p className="font-normal text-[16px]">+123 666 777 88</p>
-              <p className="font-normal text-[16px]">ministore@yourinfo.com</p>
+              <button
+                type="submit"
+                className="inline-block bg-primary-100 text-white px-8 py-3 text-sm tracking-wide transition hover:opacity-90"
+              >
+                SUBMIT
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* STORES */}
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="relative overflow-hidden rounded-xl shadow-lg">
+            <Image
+              src="/assets/images/lang-store-int-2021-1634058186.avif"
+              alt="Our store"
+              width={640}
+              height={529}
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            />
+          </div>
+
+          <div className="space-y-6">
+            <h2 className="text-2xl jost font-normal">OUR STORES</h2>
+            <p className="text-sm sm:text-base opacity-80">
+              You can also directly buy products from our stores.
+            </p>
+
+            <div className="grid sm:grid-cols-2 gap-8">
+              {["USA", "FRANCE"].map((country, idx) => (
+                <div key={idx} className="space-y-3">
+                  <h3 className="jost text-lg underline">{country}</h3>
+                  <p>730 Glenstone Ave 65802, Springfield, US</p>
+                  <p>+123 222 333 44</p>
+                  <p>+123 666 777 88</p>
+                  <p>ministore@yourinfo.com</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

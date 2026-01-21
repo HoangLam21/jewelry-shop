@@ -6,16 +6,20 @@ import Image from "next/image";
 import LabelInformation from "@/components/shared/label/LabelInformation";
 import MyButton from "@/components/shared/button/MyButton";
 import InputEdit from "@/components/shared/input/InputEdit";
-import { Customer, defaultDetail } from "./CustomerList";
 import {
   getDetailCustomer,
   updateInfoCustomer,
 } from "@/lib/service/customer.service";
-
+const defaultDetail: CreateCustomer = {
+  fullName: "",
+  phoneNumber: "",
+  email: "",
+  address: "",
+};
 const EditCustomerInformation = () => {
   const { id } = useParams<{ id: string }>() as { id: string };
-  const [detail, setDetail] = useState<Customer>(defaultDetail);
-  const [updateCustomer, setUpdateCustomer] = useState<Customer>(defaultDetail);
+  const [detail, setDetail] = useState<any>(defaultDetail);
+  const [updateCustomer, setUpdateCustomer] = useState<any>(defaultDetail);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,7 +30,7 @@ const EditCustomerInformation = () => {
             (total, order) => total + order.cost,
             0
           );
-          const data: Customer = {
+          const data: any = {
             id: result._id,
             fullName: result.fullName,
             phoneNumber: result.phoneNumber,
@@ -77,7 +81,7 @@ const EditCustomerInformation = () => {
 
       const result = await updateInfoCustomer(id, data);
       if (result) {
-        setDetail((prev) => {
+        setDetail((prev: any) => {
           if (prev) {
             return {
               ...prev,

@@ -1,7 +1,6 @@
 import TitleSession from "@/components/shared/label/TitleSession";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { ImportData, ProductsData } from "@/constants/data";
 import { format } from "date-fns";
 import InputEdit from "@/components/shared/input/InputEdit";
 import InputSelection from "@/components/shared/input/InputSelection";
@@ -57,14 +56,6 @@ const AddImport = () => {
     provider: "", // Default to an empty string
     staff: "6776bdd574de08ccc866a4b8", // Default to an empty string
   });
-
-  if (!item) {
-    return (
-      <div className="flex w-full h-full items-center justify-center bg-white">
-        <div className="loader"></div>
-      </div>
-    );
-  }
 
   useEffect(() => {
     const fetchData = async () => {

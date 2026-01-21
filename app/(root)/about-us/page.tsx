@@ -56,7 +56,7 @@ export default function Page() {
 
           <div className="relative w-full max-w-[728px] mx-auto mt-10 aspect-[728/603]">
             <Image
-              src="/assets/images/a4cb9d7eb1a48589b594356a91d8c6b4.jpg"
+              src="/assets/images/92433.jpg"
               alt="Why we do - Jewelry collection"
               fill
               className="object-cover rounded-lg shadow-lg"
@@ -97,7 +97,7 @@ export default function Page() {
 
           <div className="relative w-full max-w-[728px] mx-auto mt-10 aspect-[728/952]">
             <Image
-              src="/assets/images/22be75da29f1ace77a99dc4738ac5fe5.jpg"
+              src="/assets/images/123560770.avif"
               alt="Who we are - Brand identity"
               fill
               className="object-cover rounded-lg shadow-lg"

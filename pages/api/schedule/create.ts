@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { createSchedule } from "@/lib/actions/schedule.action"; 
+import { createSchedule } from "@/lib/actions/schedule.action";
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,9 +10,15 @@ export default async function handler(
       const data = req.body;
       const schedule = await createSchedule(data);
       return res.status(201).json(schedule);
-    } catch (error: any) {
-      console.error("Error creating schedule: ", error);
-      return res.status(500).json({ error: error.message });
+    } catch (error) {
+      console.error("Error creating schedule:", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      return res.status(500).json({ error: message });
     }
   } else {
     return res.status(405).json({ error: "Method not allowed" });
