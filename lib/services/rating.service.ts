@@ -56,7 +56,7 @@ export async function createReview(params: CreateRatingDTO) {
   try {
     const response = await fetch("/api/rating/create", {
       method: "POST",
-      body: formDataToSend
+      body: formDataToSend,
     });
 
     if (!response.ok) {
@@ -69,4 +69,32 @@ export async function createReview(params: CreateRatingDTO) {
   } catch (error) {
     console.error("Error submitting form: ", error);
   }
+}
+
+export function calculateRatingStats(reviews: any[]) {
+  if (!reviews || reviews.length === 0) {
+    return {
+      averageRating: 0,
+      totalReviews: 0,
+      distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+    };
+  }
+
+  const totalReviews = reviews.length;
+  const sumRating = reviews.reduce((sum, review) => sum + review.point, 0);
+  const averageRating = sumRating / totalReviews;
+
+  const distribution = {
+    5: reviews.filter((r) => r.point === 5).length,
+    4: reviews.filter((r) => r.point === 4).length,
+    3: reviews.filter((r) => r.point === 3).length,
+    2: reviews.filter((r) => r.point === 2).length,
+    1: reviews.filter((r) => r.point === 1).length,
+  };
+
+  return {
+    averageRating: Math.round(averageRating * 10) / 10,
+    totalReviews,
+    distribution,
+  };
 }

@@ -1,10 +1,8 @@
 "use client";
 import TitleSession from "@/components/shared/label/TitleSession";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { StaffData } from "@/constants/data";
+import React, { useState } from "react";
 import Image from "next/image";
-import LabelInformation from "@/components/shared/label/LabelInformation";
 import MyButton from "@/components/shared/button/MyButton";
 import InputEdit from "@/components/shared/input/InputEdit";
 import InputDate from "@/components/shared/input/InputDate";
@@ -130,7 +128,9 @@ const AddStaffInformation = () => {
               alert("✅ Tạo nhân viên thành công! Đã tải lên ảnh đại diện.");
             } catch (avatarError: any) {
               // Staff đã được tạo nhưng upload avatar thất bại
-              alert(`✅ Tạo nhân viên thành công!\n⚠️ Không thể tải lên ảnh đại diện: ${avatarError?.message || "Lỗi không xác định"}`);
+              alert(
+                `✅ Tạo nhân viên thành công!\n⚠️ Không thể tải lên ảnh đại diện: ${avatarError?.message || "Lỗi không xác định"}`
+              );
             }
           } else {
             alert("✅ Tạo nhân viên thành công!");
@@ -141,7 +141,9 @@ const AddStaffInformation = () => {
       } catch (err: any) {
         console.error("Error creating staff:", err);
         // Hiển thị error message rõ ràng hơn
-        const errorMessage = err?.message || "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.";
+        const errorMessage =
+          err?.message ||
+          "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại sau.";
         alert(`❌ Lỗi: ${errorMessage}`);
       }
     }

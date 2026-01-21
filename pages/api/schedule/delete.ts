@@ -8,11 +8,21 @@ export default async function handler(
   if (req.method === "DELETE") {
     try {
       const { id } = req.query;
-      const response = await deleteSchedule(id?.toString()!);
+      if (!id || typeof id !== "string") {
+        return res.status(400).json({ error: "Invalid schedule id" });
+      }
+
+      const response = await deleteSchedule(id);
       return res.status(200).json(response);
-    } catch (error: any) {
-      console.error("Error deleting schedule: ", error);
-      return res.status(500).json({ error: error.message });
+    } catch (error) {
+      console.error("Error deleting schedule:", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
+
+      return res.status(500).json({ error: message });
     }
   } else {
     return res.status(405).json({ error: "Method not allowed" });

@@ -1,8 +1,7 @@
 import TitleSession from "@/components/shared/label/TitleSession";
-import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-import { format, formatDate } from "date-fns";
+import { format } from "date-fns";
 import InputEdit from "@/components/shared/input/InputEdit";
 import InputSelection from "@/components/shared/input/InputSelection";
 import LabelInformation from "@/components/shared/label/LabelInformation";
@@ -11,18 +10,13 @@ import { formatCurrency, formatPrice } from "@/lib/utils";
 import ImportOrderCard, {
   DetailImportProduct,
 } from "@/components/shared/card/ImportOrderCard";
-import TableSearch from "@/components/shared/table/TableSearch";
 import TableSearchNoFilter from "@/components/shared/table/TableSearchNoFilter";
-import PhoneNumberInput from "@/components/shared/input/PhoneInput";
 import Image from "next/image";
-import { FileContent, ProductResponse } from "@/dto/ProductDTO";
 import { fetchProduct } from "@/lib/service/product.service";
-import Product from "@/database/product.model";
-import { ProductData, Variant } from "../product/ProductList";
+import { ProductData } from "../product/ProductList";
 import { CreateOrder } from "@/dto/OrderDTO";
 import InputDate from "@/components/shared/input/InputDate";
 import AddDetailProduct from "./AddDetailProduct";
-import { groupVariants } from "../product/ProductEdit";
 import { createOrder } from "@/lib/service/order.service";
 import { fetchVoucher } from "@/lib/service/voucher.service";
 import InputNumberSelection from "@/components/shared/input/InputNumberSelection";
@@ -55,14 +49,6 @@ const AddOrder = () => {
     customer: "", // Default to an empty string
     staff: "6776bdd574de08ccc866a4b8", // Default to an empty string
   });
-
-  if (!item) {
-    return (
-      <div className="flex w-full h-full items-center justify-center bg-white">
-        <div className="loader"></div>
-      </div>
-    );
-  }
 
   useEffect(() => {
     const fetchData = async () => {

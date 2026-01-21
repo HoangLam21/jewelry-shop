@@ -1,31 +1,264 @@
+// "use client";
+// import TableSearch from "@/components/shared/table/TableSearch";
+// import { PaginationProps } from "@/types/pagination";
+// import { Icon } from "@iconify/react/dist/iconify.js";
+// import React, { useEffect, useState } from "react";
+// import Link from "next/link";
+// import Table from "@/components/shared/table/Table";
+// import PaginationUI from "@/types/pagination/Pagination";
+// import { deleteProvider, fetchProvider } from "@/lib/service/provider.service";
+// import { Provider } from "@/dto/ProviderDTO";
+// import Format from "@/components/shared/card/ConfirmCard";
+
+// const columns = [
+//   { header: "ID", accessor: "_id" },
+//   {
+//     header: "Name",
+//     accessor: "name",
+//     className: "hidden md:table-cell",
+//   },
+
+//   {
+//     header: "Address",
+//     accessor: "address",
+//     className: "hidden md:table-cell",
+//   },
+
+//   { header: "Phone", accessor: "contact", className: "hidden lg:table-cell" },
+//   { header: "Action", accessor: "action" },
+// ];
+
+// const ProviderList = ({
+//   provider,
+//   setProvider,
+// }: {
+//   provider: Provider[] | null;
+//   setProvider: any;
+// }) => {
+//   const [searchQuery, setSearchQuery] = useState("");
+//   const [currentPage, setCurrentPage] = useState(1);
+//   const rowsPerPage = 8;
+//   const [deleteProviderId, setDeleteProviderId] = useState<string | null>(null);
+//   const [onDelete, setOnDelete] = useState(false);
+//   const [sortConfig, setSortConfig] = useState<{
+//     key: SortableKeys;
+//     direction: "ascending" | "descending";
+//   }>({
+//     key: "id",
+//     direction: "ascending",
+//   });
+//   type SortableKeys = "id" | "name" | "contact" | "address";
+
+//   if (!provider || provider === null) {
+//     return (
+//       <div className="w-full flex flex-col p-4 rounded-md shadow-sm items-center justify-center min-h-[400px]">
+//         <div className="loader"></div>
+//       </div>
+//     );
+//   }
+
+//   const getValueByKey = (item: (typeof provider)[0], key: SortableKeys) => {
+//     switch (key) {
+//       case "id":
+//         return item._id;
+//       case "name":
+//         return item.name;
+//       case "address":
+//         return item.address;
+//       case "contact":
+//         return item.contact;
+//       default:
+//         return "";
+//     }
+//   };
+
+//   const sorted = [...provider].sort((a, b) => {
+//     const aValue = getValueByKey(a, sortConfig.key);
+//     const bValue = getValueByKey(b, sortConfig.key);
+
+//     if (aValue < bValue) {
+//       return sortConfig.direction === "ascending" ? -1 : 1;
+//     }
+//     if (aValue > bValue) {
+//       return sortConfig.direction === "ascending" ? 1 : -1;
+//     }
+//     return 0;
+//   });
+
+//   const requestSort = (key: SortableKeys) => {
+//     let direction: "ascending" | "descending" = "ascending";
+//     if (sortConfig.key === key && sortConfig.direction === "ascending") {
+//       direction = "descending";
+//     }
+//     setSortConfig({ key, direction });
+//   };
+
+//   const filterData = sorted.filter((item) => {
+//     const lowerCaseQuery = searchQuery.toLowerCase();
+//     // Lọc theo searchQuery
+//     const matchesSearch =
+//       item.name.toLowerCase().includes(lowerCaseQuery) ||
+//       item.address.toLowerCase().includes(lowerCaseQuery) ||
+//       item.contact.toString().toLowerCase().includes(lowerCaseQuery);
+
+//     return matchesSearch;
+//   });
+
+//   const totalPages = Math.ceil(filterData.length / rowsPerPage);
+//   const startIndex = (currentPage - 1) * rowsPerPage;
+//   const endIndex = startIndex + rowsPerPage;
+//   const currentData = filterData.slice(startIndex, endIndex);
+
+//   const dataLength = filterData.length;
+//   const itemsPerPage = 8;
+//   const indexOfLastItem = currentPage * itemsPerPage;
+//   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+//   const paginationUI: PaginationProps = {
+//     currentPage,
+//     setCurrentPage,
+//     indexOfLastItem,
+//     indexOfFirstItem,
+//     totalPages,
+//     dataLength,
+//   };
+
+//   const handleSort = () => {
+//     console.log("this is sort");
+//   };
+
+//   const handleDeleteprovider = async (id: string) => {
+//     try {
+//       const result = await deleteProvider(id);
+//       if (result) {
+//         setOnDelete(false);
+//         setProvider((prev: Provider[]) =>
+//           prev.filter((item: Provider) => item._id !== id)
+//         );
+//         () => setDeleteProviderId(null);
+//         alert("Delete provider successfully.");
+//       } else {
+//         alert("Can't delete provider.");
+//       }
+//     } catch (error) {
+//       console.error("Error delete data:", error);
+
+//       const errorMessage =
+//         error instanceof Error
+//           ? error.message
+//           : "An unexpected error occurred.";
+
+//       alert(`Error delete data: ${errorMessage}`);
+//     }
+//   };
+
+//   const renderRow = (item: Provider) => (
+//     <tr
+//       key={item._id}
+//       className="border-t border-gray-300 my-4 text-sm dark:text-dark-360"
+//     >
+//       <td className="px-4 py-2">
+//         <div className="flex flex-col">
+//           <p>{item._id}</p>
+//         </div>
+//       </td>
+//       <td className="px-4 py-2">{item.name}</td>
+//       <td className="px-4 py-2">{item.address}</td>
+
+//       <td className="px-4 py-2">{item.contact}</td>
+
+//       <td className="px-4 py-2 hidden lg:table-cell">
+//         <div className="flex items-center gap-2">
+//           <Link href={`/admin/provider/${item._id}`}>
+//             <div className="w-7 h-7 flex items-center justify-center rounded-full">
+//               <Icon
+//                 icon="tabler:eye"
+//                 width={24}
+//                 height={24}
+//                 className="text-accent-blue bg-light-blue dark:bg-blue-800 dark:text-dark-360 rounded-md p-1 hover:cursor-pointer"
+//               />
+//             </div>
+//           </Link>
+//           <Link href={`/admin/provider/edit/${item._id}`}>
+//             <div className="w-7 h-7 flex items-center justify-center rounded-full">
+//               <Icon
+//                 icon="tabler:edit"
+//                 width={24}
+//                 height={24}
+//                 className="text-white  dark:bg-dark-150 bg-dark-green rounded-md  p-1 hover:cursor-pointer"
+//               />
+//             </div>
+//           </Link>
+//           <div
+//             className="w-7 h-7 flex items-center justify-center rounded-full"
+//             onClick={() => setDeleteProviderId(item._id)}
+//           >
+//             <Icon
+//               icon="tabler:trash"
+//               width={24}
+//               height={24}
+//               className=" dark:text-red-950 font-bold bg-light-red text-red-600 dark:bg-dark-110 rounded-md p-1 hover:cursor-pointer"
+//             />
+//           </div>
+//         </div>
+//       </td>
+//       {deleteProviderId === item._id && (
+//         <td colSpan={columns.length}>
+//           <Format
+//             onClose={() => setDeleteProviderId(null)}
+//             content={`delete: `}
+//             label={"Delete provider"}
+//             userName={item.name}
+//             onConfirmDelete={() => handleDeleteprovider(item._id)}
+//           />
+//         </td>
+//       )}
+//     </tr>
+//   );
+
+//   return (
+//     <div className="w-full flex flex-col p-4 rounded-md shadow-sm">
+//       <TableSearch onSearch={setSearchQuery} onSort={handleSort} />
+//       <Table
+//         columns={columns}
+//         data={currentData}
+//         renderRow={renderRow}
+//         onSort={(key: string) => requestSort(key as SortableKeys)}
+//       />
+//       <div className="p-4 mt-4 text-sm flex items-center justify-center md:justify-between text-gray-500 dark:text-dark-360">
+//         <PaginationUI paginationUI={paginationUI} />
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ProviderList;
+
 "use client";
 import TableSearch from "@/components/shared/table/TableSearch";
 import { PaginationProps } from "@/types/pagination";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Table from "@/components/shared/table/Table";
 import PaginationUI from "@/types/pagination/Pagination";
-import { deleteProvider, fetchProvider } from "@/lib/service/provider.service";
+import { deleteProvider } from "@/lib/service/provider.service";
 import { Provider } from "@/dto/ProviderDTO";
 import Format from "@/components/shared/card/ConfirmCard";
 
 const columns = [
-  { header: "ID", accessor: "_id" },
+  { header: "Provider", accessor: "_id" },
   {
     header: "Name",
     accessor: "name",
     className: "hidden md:table-cell",
   },
-
   {
     header: "Address",
     accessor: "address",
     className: "hidden md:table-cell",
   },
-
-  { header: "Phone", accessor: "contact", className: "hidden lg:table-cell" },
-  { header: "Action", accessor: "action" },
+  { header: "Contact", accessor: "contact", className: "hidden lg:table-cell" },
+  { header: "Actions", accessor: "action" },
 ];
 
 const ProviderList = ({
@@ -39,7 +272,6 @@ const ProviderList = ({
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 8;
   const [deleteProviderId, setDeleteProviderId] = useState<string | null>(null);
-  const [onDelete, setOnDelete] = useState(false);
   const [sortConfig, setSortConfig] = useState<{
     key: SortableKeys;
     direction: "ascending" | "descending";
@@ -51,8 +283,11 @@ const ProviderList = ({
 
   if (!provider || provider === null) {
     return (
-      <div className="w-full flex flex-col p-4 rounded-md shadow-sm items-center justify-center min-h-[400px]">
-        <div className="loader"></div>
+      <div className="w-full flex flex-col p-8 rounded-xl shadow-sm items-center justify-center min-h-[400px] bg-white dark:bg-dark-300">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-100"></div>
+        <p className="mt-4 text-gray-600 dark:text-gray-400">
+          Loading providers...
+        </p>
       </div>
     );
   }
@@ -95,13 +330,11 @@ const ProviderList = ({
 
   const filterData = sorted.filter((item) => {
     const lowerCaseQuery = searchQuery.toLowerCase();
-    // Lọc theo searchQuery
-    const matchesSearch =
+    return (
       item.name.toLowerCase().includes(lowerCaseQuery) ||
       item.address.toLowerCase().includes(lowerCaseQuery) ||
-      item.contact.toString().toLowerCase().includes(lowerCaseQuery);
-
-    return matchesSearch;
+      item.contact.toString().toLowerCase().includes(lowerCaseQuery)
+    );
   });
 
   const totalPages = Math.ceil(filterData.length / rowsPerPage);
@@ -126,22 +359,24 @@ const ProviderList = ({
     console.log("this is sort");
   };
 
-  const handleDeleteprovider = async (id: string) => {
+  const handleDeleteProvider = async (id: string) => {
     try {
       const result = await deleteProvider(id);
       if (result) {
-        setOnDelete(false);
         setProvider((prev: Provider[]) =>
           prev.filter((item: Provider) => item._id !== id)
         );
-        () => setDeleteProviderId(null);
+        setDeleteProviderId(null);
         alert("Delete provider successfully.");
       } else {
         alert("Can't delete provider.");
       }
-    } catch (err: any) {
-      console.error("Error delete data:", err);
-      const errorMessage = err?.message || "An unexpected error occurred.";
+    } catch (error) {
+      console.error("Error delete data:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
       alert(`Error delete data: ${errorMessage}`);
     }
   };
@@ -149,61 +384,99 @@ const ProviderList = ({
   const renderRow = (item: Provider) => (
     <tr
       key={item._id}
-      className="border-t border-gray-300 my-4 text-sm dark:text-dark-360"
+      className="hover:bg-gray-50 dark:hover:bg-dark-400 transition-colors"
     >
-      <td className="px-4 py-2">
-        <div className="flex flex-col">
-          <p>{item._id}</p>
-        </div>
-      </td>
-      <td className="px-4 py-2">{item.name}</td>
-      <td className="px-4 py-2">{item.address}</td>
-
-      <td className="px-4 py-2">{item.contact}</td>
-
-      <td className="px-4 py-2 hidden lg:table-cell">
-        <div className="flex items-center gap-2">
-          <Link href={`/admin/provider/${item._id}`}>
-            <div className="w-7 h-7 flex items-center justify-center rounded-full">
-              <Icon
-                icon="tabler:eye"
-                width={24}
-                height={24}
-                className="text-accent-blue bg-light-blue dark:bg-blue-800 dark:text-dark-360 rounded-md p-1 hover:cursor-pointer"
-              />
-            </div>
-          </Link>
-          <Link href={`/admin/provider/edit/${item._id}`}>
-            <div className="w-7 h-7 flex items-center justify-center rounded-full">
-              <Icon
-                icon="tabler:edit"
-                width={24}
-                height={24}
-                className="text-white  dark:bg-dark-150 bg-dark-green rounded-md  p-1 hover:cursor-pointer"
-              />
-            </div>
-          </Link>
-          <div
-            className="w-7 h-7 flex items-center justify-center rounded-full"
-            onClick={() => setDeleteProviderId(item._id)}
-          >
-            <Icon
-              icon="tabler:trash"
-              width={24}
-              height={24}
-              className=" dark:text-red-950 font-bold bg-light-red text-red-600 dark:bg-dark-110 rounded-md p-1 hover:cursor-pointer"
-            />
+      {/* Provider Info */}
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-semibold">
+            {item.name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p className="font-medium text-dark100_light500">{item.name}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              #{item._id.substring(0, 8)}
+            </p>
           </div>
         </div>
       </td>
+
+      {/* Name */}
+      <td className="px-6 py-4 hidden md:table-cell">
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400">
+          {item.name}
+        </span>
+      </td>
+
+      {/* Address */}
+      <td className="px-6 py-4 hidden md:table-cell">
+        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+          <Icon icon="solar:map-point-linear" width={16} height={16} />
+          <span className="max-w-xs truncate">{item.address}</span>
+        </div>
+      </td>
+
+      {/* Contact */}
+      <td className="px-6 py-4 hidden lg:table-cell">
+        <div className="flex items-center gap-2">
+          <Icon
+            icon="solar:phone-calling-linear"
+            width={16}
+            height={16}
+            className="text-primary-100"
+          />
+          <span className="text-gray-600 dark:text-gray-400">
+            {item.contact}
+          </span>
+        </div>
+      </td>
+
+      {/* Actions */}
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-2">
+          <Link href={`/admin/provider/${item._id}`}>
+            <button className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors group">
+              <Icon
+                icon="solar:eye-linear"
+                width={20}
+                height={20}
+                className="text-blue-600 dark:text-blue-400"
+              />
+            </button>
+          </Link>
+          <Link href={`/admin/provider/edit/${item._id}`}>
+            <button className="p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors group">
+              <Icon
+                icon="solar:pen-linear"
+                width={20}
+                height={20}
+                className="text-green-600 dark:text-green-400"
+              />
+            </button>
+          </Link>
+          <button
+            onClick={() => setDeleteProviderId(item._id)}
+            className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors group"
+          >
+            <Icon
+              icon="solar:trash-bin-trash-linear"
+              width={20}
+              height={20}
+              className="text-red-600 dark:text-red-400"
+            />
+          </button>
+        </div>
+      </td>
+
+      {/* Delete Confirmation Modal */}
       {deleteProviderId === item._id && (
-        <td colSpan={columns.length}>
+        <td colSpan={columns.length} className="absolute inset-0">
           <Format
             onClose={() => setDeleteProviderId(null)}
-            content={`delete: `}
-            label={"Delete provider"}
+            content="delete:"
+            label="Delete provider"
             userName={item.name}
-            onConfirmDelete={() => handleDeleteprovider(item._id)}
+            onConfirmDelete={() => handleDeleteProvider(item._id)}
           />
         </td>
       )}
@@ -211,17 +484,32 @@ const ProviderList = ({
   );
 
   return (
-    <div className="w-full flex flex-col p-4 rounded-md shadow-sm">
+    <div className="w-full flex flex-col gap-6 p-6 rounded-xl bg-gray-50 dark:bg-dark-200">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-dark100_light500">
+            Provider Management
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Manage your suppliers and business partners
+          </p>
+        </div>
+      </div>
+
+      {/* Search */}
       <TableSearch onSearch={setSearchQuery} onSort={handleSort} />
+
+      {/* Table */}
       <Table
         columns={columns}
         data={currentData}
         renderRow={renderRow}
         onSort={(key: string) => requestSort(key as SortableKeys)}
       />
-      <div className="p-4 mt-4 text-sm flex items-center justify-center md:justify-between text-gray-500 dark:text-dark-360">
-        <PaginationUI paginationUI={paginationUI} />
-      </div>
+
+      {/* Pagination */}
+      <PaginationUI paginationUI={paginationUI} />
     </div>
   );
 };
