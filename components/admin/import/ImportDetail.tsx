@@ -1,6 +1,5 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ImportData } from "@/constants/data";
 import LabelInformation from "@/components/shared/label/LabelInformation";
 import TitleSession from "@/components/shared/label/TitleSession";
 import TableImport from "@/components/shared/table/TableImport";

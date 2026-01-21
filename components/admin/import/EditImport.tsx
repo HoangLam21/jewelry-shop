@@ -50,10 +50,7 @@ const EditImport = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { id } = useParams<{ id: string }>() as { id: string }; // Ensure id is a string
 
-  const cleanId = typeof id === "string" ? id.replace("edit-", "") : "";
-
   const [item, setItem] = useState<Import | null>(null);
-  const [updatedItem, setUpdatedItem] = useState<Import | null>(null); // Store the edited item
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isValid, setIsValid] = useState(true);
 

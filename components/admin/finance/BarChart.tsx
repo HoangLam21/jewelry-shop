@@ -9,13 +9,13 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent
+  ChartTooltipContent,
 } from "@/components/ui/chart";
 
 interface Props {
@@ -30,21 +30,24 @@ export function TotalCostGoods({ total }: { total: Props[] }) {
     const chartData = salesData.map((product) => ({
       browser: product.name,
       visitors: product.quantity,
-      fill: product.color
+      fill: product.color,
     }));
 
-    const chartConfig = salesData.reduce((config, product) => {
-      config[product.name.toLowerCase()] = {
-        label: product.name,
-        color: product.color
-      };
-      return config;
-    }, {} as Record<string, { label: string; color: string }>);
+    const chartConfig = salesData.reduce(
+      (config, product) => {
+        config[product.name.toLowerCase()] = {
+          label: product.name,
+          color: product.color,
+        };
+        return config;
+      },
+      {} as Record<string, { label: string; color: string }>
+    );
 
     // Thêm cấu hình tổng quát cho chartConfig với màu mặc định
     chartConfig.visitors = {
       label: "Quantity",
-      color: "hsl(var(--default-color))" // Đặt màu mặc định
+      color: "hsl(var(--default-color))", // Đặt màu mặc định
     };
 
     return { chartData, chartConfig };
