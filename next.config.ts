@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Optimize script loading for Clerk
+  experimental: {
+    optimizePackageImports: ['@clerk/nextjs'],
+  },
   images: {
     // Update to use remotePatterns instead of domains (deprecated)
     remotePatterns: [

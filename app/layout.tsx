@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/contexts/ThemeProvider";
 import { CartProvider } from "@/contexts/CartContext";
 import { BuyNowProvider } from "@/contexts/BuyNowContext";
 import { ProductManageProvider } from "@/contexts/ProductManageContext";
+import ClerkWrapper from "@/components/providers/ClerkWrapper";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -52,14 +53,19 @@ export default function RootLayout({
           // Redirect đến callback route để check role và redirect tương ứng
           afterSignInUrl="/auth/callback"
           afterSignUpUrl="/auth/callback"
+          // Load Clerk asynchronously to prevent blocking and timeout issues
+          // This allows Clerk to load in the background without blocking the page
+          loadAsync={true}
         >
-          <ThemeProvider>
-            <CartProvider>
-              <BuyNowProvider>
-                <ProductManageProvider>{children}</ProductManageProvider>
-              </BuyNowProvider>
-            </CartProvider>
-          </ThemeProvider>
+          <ClerkWrapper>
+            <ThemeProvider>
+              <CartProvider>
+                <BuyNowProvider>
+                  <ProductManageProvider>{children}</ProductManageProvider>
+                </BuyNowProvider>
+              </CartProvider>
+            </ThemeProvider>
+          </ClerkWrapper>
         </ClerkProvider>
       </body>
     </html>
