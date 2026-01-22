@@ -49,7 +49,7 @@ const AddCategoryInformation = () => {
         if (result) {
           const data: ProductData[] = result.map((item) => ({
             id: item._id,
-            image: item.files[0].url,
+            image: item.files?.[0]?.url ?? "",
             imageInfo: item.files,
             productName: item.name,
             price: formatCurrency(item.cost),
@@ -57,9 +57,20 @@ const AddCategoryInformation = () => {
             description: item.description,
             vouchers: item.vouchers?.[item.vouchers.length - 1]?._id || "",
             provider: item.provider ? item.provider._id : "",
-            category: item.category,
+
+            // ✅ FIX: category luôn là string
+            category:
+              typeof item.category === "string"
+                ? item.category
+                : item.category?._id || "",
+
             variants: item.variants,
-            categoryId: "",
+
+            // ✅ nếu ProductData yêu cầu categoryId thì set luôn giống category
+            categoryId:
+              typeof item.category === "string"
+                ? item.category
+                : item.category?._id || "",
           }));
 
           setProductList(data);

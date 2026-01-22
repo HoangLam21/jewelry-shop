@@ -854,7 +854,7 @@ export const contract = c.router({
       responses: {
         200: z.object({
           userId: z.string(),
-          products: z.record(z.number()),
+          products: z.record(z.string(), z.number()), // ✅ FIX zod v4
         }),
         400: z.object({ error: z.string() }),
         500: z.object({ error: z.string() }),
@@ -868,17 +868,17 @@ export const contract = c.router({
         productId: z.string(),
         quantity: z.number(),
       }),
+      query: z.object({
+        userId: z.string(),
+      }),
       responses: {
         200: z.object({
           userId: z.string(),
-          products: z.record(z.number()),
+          products: z.record(z.string(), z.number()), // ✅ FIX zod v4
         }),
         400: z.object({ error: z.string() }),
         500: z.object({ error: z.string() }),
       },
-      query: z.object({
-        userId: z.string(),
-      }),
     },
 
     addProductToCart: {
@@ -892,7 +892,7 @@ export const contract = c.router({
       responses: {
         201: z.object({
           userId: z.string(),
-          products: z.record(z.number()),
+          products: z.record(z.string(), z.number()), // ✅ FIX zod v4
         }),
         400: z.object({ error: z.string() }),
         500: z.object({ error: z.string() }),
@@ -914,7 +914,7 @@ export const contract = c.router({
       responses: {
         201: z.object({
           userId: z.string(),
-          products: z.record(z.number()), // Map<ProductId, Quantity>
+          products: z.record(z.string(), z.number()), // ✅ FIX zod v4
           totalCost: z.number(),
           createdAt: z.date().optional(),
           updatedAt: z.date().optional(),
@@ -931,18 +931,18 @@ export const contract = c.router({
     removeProductFromCart: {
       method: "DELETE",
       path: "/api/cart/remove/product",
-      responses: {
-        200: z.object({
-          userId: z.string(),
-          products: z.record(z.number()),
-        }),
-        400: z.object({ error: z.string() }),
-        500: z.object({ error: z.string() }),
-      },
       query: z.object({
         userId: z.string(),
         productId: z.string(),
       }),
+      responses: {
+        200: z.object({
+          userId: z.string(),
+          products: z.record(z.string(), z.number()), // ✅ FIX zod v4
+        }),
+        400: z.object({ error: z.string() }),
+        500: z.object({ error: z.string() }),
+      },
     },
 
     addProductVariantToCart: {
@@ -958,7 +958,7 @@ export const contract = c.router({
       responses: {
         201: z.object({
           userId: z.string(),
-          products: z.record(z.number()),
+          products: z.record(z.string(), z.number()), // ✅ FIX zod v4
         }),
         400: z.object({ error: z.string() }),
         500: z.object({ error: z.string() }),
@@ -968,20 +968,20 @@ export const contract = c.router({
     removeProductVariantFromCart: {
       method: "DELETE",
       path: "/api/cart/remove/product/variant",
-      responses: {
-        200: z.object({
-          userId: z.string(),
-          products: z.record(z.number()),
-        }),
-        400: z.object({ error: z.string() }),
-        500: z.object({ error: z.string() }),
-      },
       query: z.object({
         userId: z.string(),
         productId: z.string(),
         material: z.string(),
         size: z.string(),
       }),
+      responses: {
+        200: z.object({
+          userId: z.string(),
+          products: z.record(z.string(), z.number()), // ✅ FIX zod v4
+        }),
+        400: z.object({ error: z.string() }),
+        500: z.object({ error: z.string() }),
+      },
     },
 
     editProductVariantQuantityInCart: {
@@ -992,18 +992,18 @@ export const contract = c.router({
         size: z.string(),
         quantity: z.number(),
       }),
-      responses: {
-        200: z.object({
-          userId: z.string(),
-          products: z.record(z.number()),
-        }),
-        400: z.object({ error: z.string() }),
-        500: z.object({ error: z.string() }),
-      },
       query: z.object({
         userId: z.string(),
         productId: z.string(),
       }),
+      responses: {
+        200: z.object({
+          userId: z.string(),
+          products: z.record(z.string(), z.number()), // ✅ FIX zod v4
+        }),
+        400: z.object({ error: z.string() }),
+        500: z.object({ error: z.string() }),
+      },
     },
 
     getCartInformationWithVariants: {

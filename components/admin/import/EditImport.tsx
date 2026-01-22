@@ -1,5 +1,5 @@
 import TitleSession from "@/components/shared/label/TitleSession";
-import React, { useEffect, useState } from "react";
+import React, { useState, useMemo } from "react";
 import { format } from "date-fns";
 import InputEdit from "@/components/shared/input/InputEdit";
 import LabelInformation from "@/components/shared/label/LabelInformation";
@@ -11,6 +11,8 @@ import PhoneNumberInput from "@/components/shared/input/PhoneInput";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { ImportData, ProductsData } from "@/constants/data";
+import { Variant } from "@/components/admin/product/ProductList";
+import { FileContent } from "@/dto/ProductDTO";
 
 interface Invoice {
   id: string;
@@ -33,136 +35,197 @@ interface Import {
   status: boolean;
   createAt: Date;
   createBy: string;
+  details?: DetailImportProduct[]; // Add details field for cart items
 }
 
+// Product interface matching ImportCard
 interface Product {
   id: string;
   image: string;
+  imageInfo: FileContent[];
   productName: string;
   price: string;
+  collection: string;
+  description: string;
+  vouchers: string;
+  provider: string;
+  category: string;
+  variants: Variant[];
+}
+
+// DetailImportProduct interface matching ImportOrderCard
+interface DetailImportProduct {
+  id: string;
   material: string;
+  size: string;
+  unitPrice: number;
   quantity: number;
+  discount: string;
 }
 
 const stockInfTitle = "font-medium text-[16px] ";
 
 const EditImport = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const { id } = useParams<{ id: string }>() as { id: string }; // Ensure id is a string
+  const { id } = useParams<{ id: string }>() as { id: string };
 
-  const [item, setItem] = useState<Import | null>(null);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [isValid, setIsValid] = useState(true);
+  const [cartItems, setCartItems] = useState<DetailImportProduct[]>([]);
 
-  useEffect(() => {
-    if (id) {
-      const foundStaff = ImportData.find((item) => item.id === id);
-      setUpdatedItem(foundStaff || null);
-      setItem(foundStaff || null);
-    }
+  // Get initial import data
+  const initialItem = useMemo(() => {
+    if (!id) return null;
+    return ImportData.find((item) => item.id === id) || null;
   }, [id]);
 
-  // Handle saving the import
-  const handleSave = () => {
-    if (item) {
-      console.log("Saved product: ", item);
+  // Editable item state - initialize only once
+  const [editableItem, setEditableItem] = useState<Import | null>(() => {
+    if (initialItem) {
+      return { ...initialItem, details: [] };
     }
-  };
+    return null;
+  });
 
-  // Handle supplier field changes
   const changeSuplierField = (
     field: keyof Import["suplier"],
     value: string
   ) => {
-    setItem((prev: any) => ({
-      ...prev,
-      suplier: {
-        ...prev.suplier,
-        [field]: value,
-      },
-    }));
-  };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (phoneNumber && !isValidPhoneNumber(phoneNumber)) {
-        setIsValid(false);
-      } else {
-        setIsValid(true);
-      }
-    }, 500); // Chờ 500ms sau lần nhập cuối cùng
-
-    return () => clearTimeout(timer);
-  }, [phoneNumber]);
-
-  const handleChange = (e: any) => {
-    setPhoneNumber(e.target.value);
-  };
-
-  const isValidPhoneNumber = (phoneNumber: string) => {
-    // Kiểm tra nếu phoneNumber chỉ chứa số và có độ dài 10
-    const phoneRegex = /^\d{10}$/;
-    return phoneRegex.test(phoneNumber);
-  };
-
-  const filterData = ProductsData.filter((item) => {
-    const lowerCaseQuery = searchQuery.toLowerCase();
-    const matchesSearch =
-      item.productName.toLowerCase().includes(lowerCaseQuery) ||
-      item.price.toLowerCase().includes(lowerCaseQuery) ||
-      item.id.toLowerCase().includes(lowerCaseQuery);
-    // ||
-    // item.quantity.toString().toLowerCase().includes(lowerCaseQuery);
-    return matchesSearch;
-  });
-
-  // Function to add product to cart
-  const [cartItems, setCartItems] = useState<Product[]>([]); // State to store products in the cart
-
-  // Function to add product to cart
-  const addToCart = (product: Product) => {
-    setCartItems((prev) => {
-      const exists = prev.find((item) => item.id === product.id);
-      if (exists) {
-        // Update quantity if item already exists in cart
-        return prev.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prev, { ...product, quantity: 1 }];
+    setEditableItem((prev) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        suplier: {
+          ...prev.suplier,
+          [field]: value,
+        },
+      };
     });
   };
 
-  const updateCart = (updatedItem: Product) => {
+  // Filter products with proper typing
+  const filterData = useMemo(() => {
+    return (ProductsData as unknown as Product[]).filter((item) => {
+      const lowerCaseQuery = searchQuery.toLowerCase();
+      return (
+        item.productName.toLowerCase().includes(lowerCaseQuery) ||
+        item.price.toLowerCase().includes(lowerCaseQuery) ||
+        item.id.toLowerCase().includes(lowerCaseQuery)
+      );
+    });
+  }, [searchQuery]);
+
+  // Add product to cart
+  const addToCart = (product: Product) => {
+    // Check if product has variants
+    if (product.variants && product.variants.length > 0) {
+      const firstVariant = product.variants[0];
+      
+      // Get first size from sizes array if available
+      const firstSize = firstVariant.sizes && firstVariant.sizes.length > 0 
+        ? String(firstVariant.sizes[0]) 
+        : "Default";
+      
+      const newCartItem: DetailImportProduct = {
+        id: product.id,
+        material: firstVariant.material || "Default",
+        size: firstSize,
+        unitPrice: parseFloat(product.price.replace("$", "")),
+        quantity: 1,
+        discount: "0%",
+      };
+
+      setCartItems((prev) => {
+        const exists = prev.find(
+          (item) =>
+            item.id === newCartItem.id &&
+            item.material === newCartItem.material &&
+            item.size === newCartItem.size
+        );
+
+        if (exists) {
+          return prev.map((item) =>
+            item.id === newCartItem.id &&
+            item.material === newCartItem.material &&
+            item.size === newCartItem.size
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          );
+        }
+        return [...prev, newCartItem];
+      });
+
+      // Update editableItem details
+      setEditableItem((prev) => {
+        if (!prev) return null;
+        const updatedDetails = prev.details || [];
+        const exists = updatedDetails.find(
+          (item) =>
+            item.id === newCartItem.id &&
+            item.material === newCartItem.material &&
+            item.size === newCartItem.size
+        );
+
+        if (exists) {
+          return {
+            ...prev,
+            details: updatedDetails.map((item) =>
+              item.id === newCartItem.id &&
+              item.material === newCartItem.material &&
+              item.size === newCartItem.size
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+            ),
+          };
+        }
+
+        return {
+          ...prev,
+          details: [...updatedDetails, newCartItem],
+        };
+      });
+    }
+  };
+
+  // Update cart item
+  const updateCart = (updatedItem: DetailImportProduct) => {
     setCartItems((prev) => {
       if (updatedItem.quantity === 0) {
-        // Loại bỏ sản phẩm nếu số lượng bằng 0
-        return prev.filter((item) => item.id !== updatedItem.id);
+        return prev.filter(
+          (item) =>
+            !(
+              item.id === updatedItem.id &&
+              item.material === updatedItem.material &&
+              item.size === updatedItem.size
+            )
+        );
       }
-      // Cập nhật sản phẩm nếu số lượng lớn hơn 0
       return prev.map((item) =>
-        item.id === updatedItem.id ? updatedItem : item
+        item.id === updatedItem.id &&
+        item.material === updatedItem.material &&
+        item.size === updatedItem.size
+          ? updatedItem
+          : item
       );
     });
   };
-  const totalAmount = cartItems.reduce(
-    (total, item) =>
-      total + parseFloat(item.price.replace("$", "")) * item.quantity,
-    0
-  );
 
-  const totalDiscount = cartItems.reduce(
-    (total, item) =>
-      total +
-      parseFloat(item.price.replace("$", "")) *
-        item.quantity *
-        (item.quantity / 100),
-    0
-  );
+  // Calculate totals
+  const totalAmount = useMemo(() => {
+    return cartItems.reduce(
+      (total, item) => total + item.unitPrice * item.quantity,
+      0
+    );
+  }, [cartItems]);
 
-  if (!item) {
+  const totalDiscount = useMemo(() => {
+    return cartItems.reduce((total, item) => {
+      const discountPercent = parseFloat(item.discount.replace("%", "")) || 0;
+      return (
+        total + (item.unitPrice * item.quantity * discountPercent) / 100
+      );
+    }, 0);
+  }, [cartItems]);
+
+  if (!editableItem) {
     return (
       <div className="flex w-full h-full items-center justify-center bg-white">
         <div className="loader"></div>
@@ -170,26 +233,24 @@ const EditImport = () => {
     );
   }
 
-  console.log(item, "this is iten");
-
   return (
     <div className="w-full h-full rounded-md shadow-md">
       <div className="p-4 flex flex-col gap-4">
         {/* Import Information */}
         <div className="w-full flex gap-20 items-center">
           <div className="rounded-lg w-28 h-20 flex items-center justify-center border">
-            <p>NH {item.id}</p>
+            <p>NH {editableItem.id}</p>
           </div>
           <div className="flex-1 grid grid-cols-1 gap-2">
             <LabelInformation
               title="Create At"
-              content={`${format(item.createAt, "PPP")}`}
+              content={`${format(editableItem.createAt, "PPP")}`}
             />
             <LabelInformation
               title="Status"
-              content={item.status ? "Done" : "Pending"}
+              content={editableItem.status ? "Done" : "Pending"}
             />
-            <LabelInformation title="Staff id" content={item.createBy} />
+            <LabelInformation title="Staff id" content={editableItem.createBy} />
           </div>
         </div>
 
@@ -198,15 +259,15 @@ const EditImport = () => {
         <div className="grid grid-cols-1 gap-2">
           <InputEdit
             titleInput="Name"
-            value={item.suplier.fullname}
+            value={editableItem.suplier.fullname}
             onChange={(e) => changeSuplierField("fullname", e.target.value)}
             width="w-full"
             placeholder="Enter suplier name..."
           />
-          <PhoneNumberInput item={item} setItem={setItem} />
+          <PhoneNumberInput item={editableItem} setItem={setEditableItem} />
           <InputEdit
             titleInput="Address"
-            value={item.suplier.address}
+            value={editableItem.suplier.address}
             onChange={(e) => changeSuplierField("address", e.target.value)}
             width="w-full"
             placeholder="Enter suplier address..."
@@ -220,15 +281,16 @@ const EditImport = () => {
         </div>
 
         <div className="w-full h-4/6 flex overflow-hidden">
-          <div className="container grid md:grid-cols-3 lg:grid-cols-5 grid-cols-1 w-full gap-8 max-h-[400px] md:w-2/3 lg:w-3/4 overflow-y-auto ">
-            {/* {filterData.map((product: Product) => (
+          <div className="container grid md:grid-cols-3 lg:grid-cols-5 grid-cols-1 w-full gap-8 max-h-[400px] md:w-2/3 lg:w-3/4 overflow-y-auto">
+            {filterData.map((product) => (
               <ImportCard
                 key={product.id}
                 item={product}
                 onClick={() => addToCart(product)}
               />
-            ))} */}
+            ))}
           </div>
+
           {/* Cart Section */}
           <div className="flex flex-col md:w-2/5 w-2/3 lg:w-2/5 max-h-[400px]">
             {cartItems.length > 0 ? (
@@ -236,35 +298,40 @@ const EditImport = () => {
                 <h4 className="text-[18px] font-semibold">In cart:</h4>
                 <hr className="my-2" />
                 <div>
-                  {/* Map over cart items and display them */}
-                  {/* {cartItems.map((cartItem) => (
-                    <div key={cartItem.id} className="flex flex-col gap-4">
-                      <ImportOrderCard
-                        item={cartItem}
-                        updateCart={updateCart}
-                      />
-                    </div>
-                  ))} */}
+                  {cartItems.map((cartItem) => {
+                    const product = filterData.find((p) => p.id === cartItem.id);
+                    return (
+                      <div
+                        key={`${cartItem.id}-${cartItem.material}-${cartItem.size}`}
+                        className="flex flex-col gap-4"
+                      >
+                        <ImportOrderCard
+                          cartItem={cartItem}
+                          updateCart={updateCart}
+                          setItem={setEditableItem}
+                          item={product || null}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <hr className="my-2" />
 
                 {/* Cart summary section */}
                 <div className="w-full flex flex-col gap-4 p-2">
-                  <div className="HDNH_maincontent_footer_total flex justify-between">
+                  <div className="flex justify-between">
                     <span className={stockInfTitle}>Sub total:</span>
-                    <div className="HDNH_total">{formatPrice(totalAmount)}</div>
+                    <div>{formatPrice(totalAmount)}</div>
                   </div>
-                  <div className="HDNH_maincontent_footer_discount flex justify-between">
+                  <div className="flex justify-between">
                     <span className={stockInfTitle}>Discount:</span>
-                    <div className="HDNH_discount">
-                      {formatPrice(totalDiscount)}
-                    </div>
+                    <div>{formatPrice(totalDiscount)}</div>
                   </div>
                   <hr className="my-2" />
-                  <div className="HDNH_maincontent_footer_finaltotal flex justify-between">
+                  <div className="flex justify-between">
                     <span className="font-bold text-[16px]">Total:</span>
-                    <div className="HDNH_finaltotal font-bold">
+                    <div className="font-bold">
                       {formatPrice(totalAmount - totalDiscount)}
                     </div>
                   </div>
@@ -273,7 +340,7 @@ const EditImport = () => {
             ) : (
               <div className="flex-1 flex flex-col justify-start items-center font-medium text-[16px]">
                 Your cart is empty.
-                <div className="w-52 h-52 ">
+                <div className="w-52 h-52">
                   <Image
                     src={"/assets/images/EmptyCart.jpg"}
                     alt="empty cart"

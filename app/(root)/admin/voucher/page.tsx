@@ -11,7 +11,6 @@ import { createVoucher, fetchVoucher } from "@/lib/service/voucher.service";
 import { useRouter } from "next/navigation";
 import router from "next/router";
 import React, { useEffect, useState } from "react";
-import { newDate } from "react-datepicker/dist/date_utils";
 import * as XLSX from "xlsx";
 
 const defaultVoucher: Voucher = {

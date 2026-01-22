@@ -28,6 +28,13 @@ interface Size {
 interface RatingStats {
   averageRating: number;
   totalReviews: number;
+  distribution: {
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  };
 }
 
 const Page = () => {
@@ -42,6 +49,13 @@ const Page = () => {
   const [ratingStats, setRatingStats] = useState<RatingStats>({
     averageRating: 0,
     totalReviews: 0,
+    distribution: {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0,
+    },
   });
   const { dispatch } = useCart();
   const { dispatchBuyNow } = useBuyNow();

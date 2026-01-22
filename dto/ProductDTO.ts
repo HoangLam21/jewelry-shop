@@ -11,14 +11,22 @@ export interface FileContent {
   format: string;
   type: string;
 }
+
+
+type CategoryInfo = {
+  _id: string;
+  name?: string;
+};
+
 export interface ProductResponse {
   _id: string;
-  category: string;
+    category: string | CategoryInfo; 
   cost: number;
   createAt: string;
   description: string;
   files: FileContent[];
   name: string;
+  slug: string;
   collections: string;
   provider: {
     _id: string;

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { updateInfoCustomer } from "@/lib/service/customer.service";
 import React, { useEffect, useState } from "react";
 import EditModal from "./EditModal";

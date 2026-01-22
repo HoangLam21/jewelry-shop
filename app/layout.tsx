@@ -55,7 +55,6 @@ export default function RootLayout({
           afterSignUpUrl="/auth/callback"
           // Load Clerk asynchronously to prevent blocking and timeout issues
           // This allows Clerk to load in the background without blocking the page
-          loadAsync={true}
         >
           <ClerkWrapper>
             <ThemeProvider>

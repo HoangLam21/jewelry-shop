@@ -1,6 +1,6 @@
 "use client";
 import EditImport from "@/components/admin/import/EditImport";
-import EditOrder from "@/components/admin/order/EdittOrder";
+import EditOrder from "@/components/admin/order/EditOrder";
 import Headers from "@/components/shared/header/Headers";
 import { useRouter } from "next/navigation";
 import React from "react";

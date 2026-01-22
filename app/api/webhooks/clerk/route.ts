@@ -58,13 +58,17 @@ export async function POST(req: Request) {
   if (eventType === 'user.created') {
     const { id, first_name, last_name, email_addresses, phone_numbers } = evt.data
 
-    // Tự động tạo Customer record
+    // ✅ Transform email_addresses và phone_numbers về đúng format
     const result = await createOrGetCustomer({
       id,
       firstName: first_name || '',
       lastName: last_name || '',
-      emailAddresses: email_addresses || [],
-      phoneNumbers: phone_numbers || [],
+      emailAddresses: email_addresses?.map(email => ({
+        emailAddress: email.email_address
+      })) || [],
+      phoneNumbers: phone_numbers?.map(phone => ({
+        phoneNumber: phone.phone_number
+      })) || [],
     })
 
     if (result.success) {
@@ -135,4 +139,3 @@ export async function POST(req: Request) {
 
   return new Response('Webhook received', { status: 200 })
 }
-

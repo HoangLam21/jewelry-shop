@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Calendar, DateValue } from "@nextui-org/react";
+import { Calendar } from "@nextui-org/react";
 import Headers from "@/components/shared/header/Headers";
 import ScheduleList from "@/components/admin/schedule/ScheduleList";
 import { Schedule } from "@/dto/ScheduleDTO";
@@ -11,12 +11,13 @@ import UpdateScheduleForm from "@/components/form/schedule/UpdateScheduleForm";
 import * as XLSX from "xlsx";
 
 const Page = () => {
-  // ✅ KHÔNG dùng null cho array
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [editSchedule, setEditSchedule] = useState<Schedule | null>(null);
-  const [date, setDate] = useState<DateValue | null>(null);
+  
+  // ✅ Bỏ type annotation, let TypeScript infer
+  const [date, setDate] = useState(null);
 
   useEffect(() => {
     let isMounted = true;

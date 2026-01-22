@@ -63,18 +63,21 @@ const AddImport = () => {
         const result: ProductResponse[] = await fetchProduct();
         if (result) {
           const data: Product[] = result.map((item) => ({
-            id: item._id,
-            image: item.files[0].url,
-            imageInfo: item.files,
-            productName: item.name,
-            price: formatCurrency(item.cost),
-            collection: item.collections,
-            description: item.description,
-            vouchers: item.vouchers?.[item.vouchers.length - 1]?._id || "",
-            provider: item.provider ? item.provider._id : "",
-            category: item.category,
-            variants: item.variants,
-          }));
+  id: item._id,
+  image: item.files?.[0]?.url ?? "",
+  imageInfo: item.files,
+  productName: item.name,
+  price: formatCurrency(item.cost),
+  collection: item.collections,
+  description: item.description,
+  vouchers: item.vouchers?.[item.vouchers.length - 1]?._id || "",
+  provider: item.provider ? item.provider._id : "",
+
+  // ✅ FIX category luôn string
+  category: typeof item.category === "string" ? item.category : item.category?._id || "",
+
+  variants: item.variants,
+}));
 
           setList(data);
         }

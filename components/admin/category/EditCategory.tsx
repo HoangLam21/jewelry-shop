@@ -115,20 +115,30 @@ const EditCategoryInformation = () => {
       try {
         const result: ProductResponse[] = await fetchProduct();
         if (result) {
-          const data: ProductData[] = result.map((item) => ({
-            id: item._id,
-            image: item.files[0].url,
-            imageInfo: item.files,
-            productName: item.name,
-            price: formatCurrency(item.cost),
-            collection: item.collections,
-            description: item.description,
-            vouchers: item.vouchers?.[item.vouchers.length - 1]?._id || "",
-            provider: item.provider ? item.provider._id : "",
-            category: item.category,
-            variants: item.variants,
-            categoryId: "",
-          }));
+          const data: ProductData[] = result.map((item) => {
+            const categoryId =
+              typeof item.category === "string"
+                ? item.category
+                : item.category?._id || "";
+
+            return {
+              id: item._id,
+              image: item.files?.[0]?.url ?? "",
+              imageInfo: item.files,
+              productName: item.name,
+              price: formatCurrency(item.cost),
+              collection: item.collections,
+              description: item.description,
+              vouchers: item.vouchers?.[item.vouchers.length - 1]?._id || "",
+              provider: item.provider ? item.provider._id : "",
+
+              // ✅ FIX
+              category: categoryId,
+              categoryId: categoryId,
+
+              variants: item.variants,
+            };
+          });
 
           setProductList(data);
         }

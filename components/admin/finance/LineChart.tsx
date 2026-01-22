@@ -25,8 +25,6 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { fetchFinance } from "@/lib/service/finance.service";
-import { CretaeFinance } from "@/dto/FinaceDTO";
 
 const chartConfig = {
   views: {
@@ -34,7 +32,7 @@ const chartConfig = {
   },
   income: {
     label: "income",
-    color: "#E01F27" // Đổi màu thành #E01F27
+    color: "#E01F27"
   },
   outcome: {
     label: "outcome",
@@ -49,20 +47,26 @@ interface props {
 export function LineChart({ formattedData }: props) {
   const [timeRange, setTimeRange] = React.useState("90d");
 
-  const filteredData = formattedData.filter((item: any) => {
-    const date = new Date(item.date);
-    const referenceDate = Date.now();
+  // ✅ Sử dụng useMemo để tính toán filteredData
+  const filteredData = React.useMemo(() => {
+    // ✅ Move Date.now() vào useMemo, và cache reference date
+    const referenceDate = new Date();
+    
+    return formattedData.filter((item: any) => {
+      const date = new Date(item.date);
 
-    let daysToSubtract = 90;
-    if (timeRange === "30d") {
-      daysToSubtract = 30;
-    } else if (timeRange === "7d") {
-      daysToSubtract = 7;
-    }
-    const startDate = new Date(referenceDate);
-    startDate.setDate(startDate.getDate() - daysToSubtract);
-    return date >= startDate;
-  });
+      let daysToSubtract = 90;
+      if (timeRange === "30d") {
+        daysToSubtract = 30;
+      } else if (timeRange === "7d") {
+        daysToSubtract = 7;
+      }
+      
+      const startDate = new Date(referenceDate);
+      startDate.setDate(startDate.getDate() - daysToSubtract);
+      return date >= startDate;
+    });
+  }, [formattedData, timeRange]); // Dependencies: re-calculate khi data hoặc timeRange thay đổi
 
   return (
     <Card>
@@ -125,7 +129,7 @@ export function LineChart({ formattedData }: props) {
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) => {
+                  labelFormatter={(value:any) => {
                     return new Date(value).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric"
@@ -149,7 +153,8 @@ export function LineChart({ formattedData }: props) {
               stroke="#E01F27"
               stackId="a"
             />
-            <ChartLegend content={<ChartLegendContent />} />
+            {/* ✅ Xóa ChartLegend vì không cần thiết hoặc để Recharts tự handle
+            <ChartLegend content={<ChartLegendContent />} /> */}
           </AreaChart>
         </ChartContainer>
       </CardContent>

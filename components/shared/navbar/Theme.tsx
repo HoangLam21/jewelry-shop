@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import React, { useState, useEffect } from "react";
 
@@ -17,12 +18,10 @@ const Theme = () => {
   const { mode, setMode } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Chỉ render theme icon sau khi component mount trên client để tránh hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Render placeholder với cùng kích thước để tránh layout shift
   if (!mounted) {
     return (
       <Menubar className="relative border-none bg-transparent shadow-none">
@@ -63,25 +62,28 @@ const Theme = () => {
             />
           )}
         </MenubarTrigger>
+
         <MenubarContent
           className="absolute -right-12 mt-3 min-w-[120px]
-        rounded border py-2 dark:border-dark-400
-       dark:bg-dark-300
-        "
+          rounded border py-2 dark:border-dark-400
+          dark:bg-dark-300"
         >
           {themes.map((item) => (
             <MenubarItem
               key={item.value}
-              className="flex items-center
-              gap-4 px-2.5 py-2
-              dark:focus:bg-dark-400"
+              className="flex items-center gap-4 px-2.5 py-2 dark:focus:bg-dark-400"
               onClick={() => {
-                setMode(item.value);
-                if (item.value !== "system") {
-                  localStorage.theme = item.value;
-                } else {
+                const value = item.value;
+
+                if (value === "system") {
+                  // reset local theme
                   localStorage.removeItem("theme");
+                  return;
                 }
+
+                // ✅ FIX: ép kiểu để TS không lỗi build
+                setMode(value as "light" | "dark");
+                localStorage.theme = value;
               }}
             >
               <Image
@@ -89,7 +91,7 @@ const Theme = () => {
                 alt={item.value}
                 width={16}
                 height={16}
-                className={`${mode === item.value && "active-theme"}`}
+                className={`${mode === item.value ? "active-theme" : ""}`}
               />
               <p
                 className={`body-semibold ${
