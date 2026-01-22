@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCart } from "@/contexts/CartContext";
 import { addToCart } from "@/lib/services/cart.service";
 import { useRouter } from "next/navigation";
@@ -59,26 +60,24 @@ const ProductCard = ({ item }: ProductCardProps) => {
     }
   };
 
-  const handleNavigateProductDetail = (id: string) => {
-    router.push(`/product/${id}`);
+  const handleNavigateProductDetail = (slug: string) => {
+    router.push(`/product/${slug}`);
   };
 
   return (
     <>
       <div
-        className="relative w-full max-w-[260px] h-auto group cursor-pointer"
+        className="relative w-[260px] transition-all group"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Image Container with Background */}
-        <div className="relative w-full h-[350px] overflow-hidden rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 mb-3">
-          <Image
-            src={item.files[0]?.url || "/placeholder.jpg"}
+        {/* Product Image Container */}
+        <div className="relative h-[350px] overflow-hidden rounded-lg cursor-pointer">
+          <img
+            src={item.files[0].url}
             alt={item.name}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
-            onClick={() => handleNavigateProductDetail(item._id)}
+            onClick={() => handleNavigateProductDetail(item.slug)}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
 
           {/* Hover Overlay */}
@@ -90,13 +89,25 @@ const ProductCard = ({ item }: ProductCardProps) => {
               SALE
             </div>
           )}
+
+          {/* Add to Cart Button */}
+          <button
+            className={`absolute bottom-4 left-4 right-4 bg-primary-100 text-white py-2.5 rounded-lg shadow-lg transition-all duration-300 font-medium hover:bg-primary-200 hover:shadow-xl transform ${
+              isHovered
+                ? "translate-y-0 opacity-100"
+                : "translate-y-4 opacity-0"
+            }`}
+            onClick={() => setIsModalOpen(true)}
+          >
+            Add to Cart
+          </button>
         </div>
 
         {/* Product Info */}
-        <div className="space-y-2 px-1">
+        <div className="space-y-2 px-1 mt-3">
           <h2
-            className="text-lg jost font-normal uppercase text-dark100_light500 line-clamp-1 hover:text-primary-100 transition-colors"
-            onClick={() => handleNavigateProductDetail(item._id)}
+            className="text-lg jost font-normal uppercase text-dark100_light500 line-clamp-1 hover:text-primary-100 transition-colors cursor-pointer"
+            onClick={() => handleNavigateProductDetail(item.slug)}
           >
             {item.name}
           </h2>
@@ -119,16 +130,6 @@ const ProductCard = ({ item }: ProductCardProps) => {
             )}
           </div>
         </div>
-
-        {/* Add to Cart Button */}
-        <button
-          className={`absolute bottom-[100px] left-0 right-0 mx-4 bg-primary-100 text-white py-2.5 rounded-lg shadow-lg transition-all duration-300 font-medium hover:bg-primary-200 hover:shadow-xl transform ${
-            isHovered ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-          }`}
-          onClick={() => setIsModalOpen(true)}
-        >
-          Add to Cart
-        </button>
       </div>
 
       {/* Modal */}

@@ -1,7 +1,9 @@
 import { Schema, model, models, Document } from "mongoose";
 import { AuditSchema, IAudit } from "./audit.model";
+
 export interface IProduct extends Document, IAudit {
   name: string;
+  slug: string; // Thêm slug field
   cost: number;
   files: Schema.Types.ObjectId[];
   description: string;
@@ -19,6 +21,7 @@ export interface IProduct extends Document, IAudit {
 
 const ProductSchema = new Schema<IProduct>({
   name: { type: String, required: true },
+  slug: { type: String, required: true, unique: true }, // Thêm slug
   cost: { type: Number, required: true },
   files: { type: [Schema.Types.ObjectId], ref: "File", required: true },
   description: { type: String, required: true },

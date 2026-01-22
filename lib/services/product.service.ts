@@ -27,3 +27,18 @@ export async function getProductById(id: string) {
     throw error;
   }
 }
+
+
+export async function getProductBySlug(slug: string) {
+  try {
+    const response = await fetch(`/api/product/slug?slug=${slug}`);
+    if (!response.ok) {
+      throw new Error("Error fetching product");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch product:", error);
+    throw error;
+  }
+}

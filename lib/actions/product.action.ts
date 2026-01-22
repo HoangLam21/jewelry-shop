@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 import Product from "@/database/product.model";
 import { connectToDatabase } from "../mongoose";
@@ -8,6 +9,7 @@ import Voucher from "@/database/voucher.model";
 import ProductProvider from "@/database/provider.model";
 import File from "@/database/file.model";
 import Category from "@/database/category.model";
+import { generateUniqueSlug } from "../utils/slug";
 
 // Tạo sản phẩm mới
 export const createProduct = async (data: {
@@ -27,6 +29,10 @@ export const createProduct = async (data: {
 }) => {
   try {
     await connectToDatabase();
+    
+    // Generate slug từ name
+    const slug = await generateUniqueSlug(data.name, Product);
+    
     const imageIds: string[] = [];
     for (const image of data.images) {
       const createdImage = await createFile(image);
@@ -43,6 +49,7 @@ export const createProduct = async (data: {
     }
     const newProduct = await Product.create({
       name: data.name,
+      slug: slug, // Thêm slug
       cost: data.cost,
       files: imageIds,
       description: data.description,
@@ -70,10 +77,10 @@ export const getProducts = async () => {
         _id: { $in: product.vouchers },
       });
       const provider = await ProductProvider.findById(product.provider);
-      const category =await Category.findById(product.category);
+      const category = await Category.findById(product.category);
       productResponse.push({
         ...product.toObject(),
-        category:category,
+        category: category,
         vouchers: vouchers,
         provider: provider,
         files: files,
@@ -83,6 +90,33 @@ export const getProducts = async () => {
   } catch (error) {
     console.log("Error fetching Products: ", error);
     throw new Error("Failed to fetch products");
+  }
+};
+
+// Thêm function mới để get product by slug
+export const getProductBySlug = async (slug: string) => {
+  try {
+    await connectToDatabase();
+    const product = await Product.findOne({ slug });
+
+    if (!product) {
+      throw new Error("Product not found");
+    }
+    const files = await File.find({ _id: { $in: product.files } });
+    const vouchers = await Voucher.find({ _id: { $in: product.vouchers } });
+    const provider = await ProductProvider.findById(product.provider);
+    const category = await Category.findById(product.category);
+    const productObject = product.toObject();
+    return {
+      ...productObject,
+      files: files,
+      vouchers: vouchers,
+      provider: provider,
+      category: category,
+    };
+  } catch (error) {
+    console.log("Error fetching Product by slug: ", error);
+    throw new Error("Failed to fetch product");
   }
 };
 
@@ -104,7 +138,7 @@ export const getProductById = async (id: string) => {
       files: files,
       vouchers: vouchers,
       provider: provider,
-      category:category
+      category: category,
     };
   } catch (error) {
     console.log("Error fetching Product by ID: ", error);
@@ -132,6 +166,14 @@ export const updateProduct = async (
 ) => {
   try {
     await connectToDatabase();
+    
+    const updateData: any = { ...data };
+    
+    // Nếu name thay đổi, generate slug mới
+    if (data.name) {
+      updateData.slug = await generateUniqueSlug(data.name, Product, id);
+    }
+    
     const updateImageIds: string[] = [];
     const existProduct = await Product.findById(id);
     for (const id of existProduct.files) {
@@ -157,7 +199,7 @@ export const updateProduct = async (
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
       {
-        ...data,
+        ...updateData,
         vouchers: voucherIds,
         provider: provider ? provider._id : undefined,
         category: category ? category._id : undefined,
@@ -172,7 +214,7 @@ export const updateProduct = async (
       files: files,
       vouchers: vouchers,
       provider: provider,
-      catgory: category,
+      category: category,
     };
   } catch (error) {
     console.log("Error updating Product: ", error);
