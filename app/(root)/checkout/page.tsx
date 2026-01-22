@@ -3,92 +3,164 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
-import { Icon } from "@iconify/react/dist/iconify.js";
-import ShippingInfomation from "@/components/form/checkout/ShippingInfomation";
+import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useBuyNow } from "@/contexts/BuyNowContext";
-import { CreateOrder } from "@/dto/OrderDTO";
-import { newDate } from "react-datepicker/dist/date_utils";
 import { formatCurrency } from "@/lib/utils";
-
-function addDays(days: number) {
-  const result = new Date();
-  result.setDate(result.getDate() + days);
-  return result;
-}
 import {
   getCartByUserId,
   removeProductFromCart,
 } from "@/lib/services/cart.service";
 import { payVNPay } from "@/lib/service/vnpay.service";
+import ShippingInfomation from "@/components/form/checkout/ShippingInformation";
 
-export default function Page() {
-  const { state } = useCart();
-  const { dispatch } = useCart();
-  const [totalOriginalPrice, setTotalOriginalPrice] = useState(0);
-  const [totalDiscount, setTotalDiscount] = useState(0);
-  const [totalFinalPrice, setTotalFinalPrice] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState("cod");
-  const [deliveryMethod, setDeliveryMethod] = useState("standard");
-  const [city, setCity] = useState("");
-  const [shippingFee, setShippingFee] = useState(0);
-  const [address, setAddress] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [note, setNote] = useState("");
-  const [cart, setCart] = useState<any[]>([]);
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+interface Voucher {
+  _id: string;
+  name: string;
+  discount: number;
+}
 
-  useEffect(() => {
+interface Variant {
+  material: string;
+  addOn: number;
+  sizes: Array<{
+    size: string;
+    stock: number;
+  }>;
+  _id: string;
+}
+
+interface CartItem {
+  _id: string;
+  name: string;
+  images: string;
+  cost: number;
+  quantity: number;
+  vouchers: Voucher[];
+  variants: Variant[];
+  selectedMaterial: string;
+  selectedSize: string;
+}
+
+interface User {
+  _id: string;
+  name?: string;
+  email?: string;
+}
+
+interface CartResponse {
+  details: Array<{
+    productId: string;
+    productName: string;
+    productFiles: Array<{ url: string }>;
+    productCost: number;
+    quantity: number;
+    productVouchers?: Voucher[];
+    productVariants?: Variant[];
+    selectedMaterial: string;
+    selectedSize: string;
+  }>;
+}
+
+interface StateItem {
+  _id: string;
+  name: string;
+  files?: Array<{ url: string }>;
+  cost: number;
+  quantity: number;
+  vouchers?: Voucher[];
+  variants?: Variant[];
+  selectedMaterial?: string;
+  selectedSize?: string;
+}
+
+type PaymentMethod = "cod" | "vnpay";
+type DeliveryMethod = "standard" | "fast" | "express";
+
+function addDays(days: number): Date {
+  const result = new Date();
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+// Helper function to get user from localStorage
+const getUserFromLocalStorage = (): User | null => {
+  if (typeof window === "undefined") return null;
+
+  try {
     const userData = localStorage.getItem("userData");
     if (userData) {
-      try {
-        const parsedData = JSON.parse(userData);
-        setUser(parsedData);
-      } catch (error) {
-        console.error("Failed to parse user data from localStorage:", error);
-      }
+      return JSON.parse(userData) as User;
     }
-  }, []);
+  } catch (error) {
+    console.error("Failed to parse user data from localStorage:", error);
+  }
+  return null;
+};
+
+export default function Page() {
+  const { state, dispatch } = useCart();
+  const [user] = useState<User | null>(() => getUserFromLocalStorage());
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [totalOriginalPrice, setTotalOriginalPrice] = useState<number>(0);
+  const [totalDiscount, setTotalDiscount] = useState<number>(0);
+  const [totalFinalPrice, setTotalFinalPrice] = useState<number>(0);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
+  const [deliveryMethod, setDeliveryMethod] =
+    useState<DeliveryMethod>("standard");
+  const [city, setCity] = useState<string>("");
+  const [shippingFee, setShippingFee] = useState<number>(0);
+  const [address, setAddress] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [note, setNote] = useState<string>("");
+  const router = useRouter();
 
   useEffect(() => {
-    const formatCartData = (cartData: any) => {
-      return cartData.details.map((detail: any) => ({
-        _id: detail.productId,
-        name: detail.productName,
-        images: detail.productFiles[0]?.url || "",
-        cost: detail.productCost,
-        quantity: detail.quantity,
-        vouchers: detail.productVouchers || [],
-        variants: detail.productVariants || [],
-        selectedMaterial: detail.selectedMaterial,
-        selectedSize: detail.selectedSize,
-      }));
+    const formatCartData = (cartData: CartResponse): CartItem[] => {
+      return cartData.details.map(
+        (detail): CartItem => ({
+          _id: detail.productId,
+          name: detail.productName,
+          images: detail.productFiles[0]?.url || "",
+          cost: detail.productCost,
+          quantity: detail.quantity,
+          vouchers: detail.productVouchers || [],
+          variants: detail.productVariants || [],
+          selectedMaterial: detail.selectedMaterial,
+          selectedSize: detail.selectedSize,
+        })
+      );
+    };
+
+    const formatStateItems = (items: StateItem[]): CartItem[] => {
+      return items.map(
+        (item): CartItem => ({
+          _id: item._id,
+          name: item.name,
+          images: item.files?.[0]?.url || "",
+          cost: item.cost,
+          quantity: item.quantity,
+          vouchers: item.vouchers || [],
+          variants: item.variants || [],
+          selectedMaterial: item.selectedMaterial || "",
+          selectedSize: item.selectedSize || "",
+        })
+      );
     };
 
     let isMounted = true;
     const getCart = async () => {
       try {
         if (user?._id) {
-          const data = await getCartByUserId(user?._id);
+          const data = await getCartByUserId(user._id);
           if (isMounted) {
             const formattedData = formatCartData(data);
             setCart(formattedData);
-            console.log("state", state.items);
           }
         } else if (state.items.length > 0) {
-          const formattedState = state.items.map((detail: any) => ({
-            _id: detail._id,
-            name: detail.name,
-            images: detail.files[0]?.url || "",
-            cost: detail.cost,
-            quantity: detail.quantity,
-            vouchers: detail.vouchers || [],
-            variants: detail.variants || [],
-            selectedMaterial: detail.selectedMaterial || "",
-            selectedSize: detail.selectedSize || "",
-          }));
-          setCart(formattedState);
+          if (isMounted) {
+            const formattedState = formatStateItems(state.items);
+            setCart(formattedState);
+          }
         }
       } catch (error) {
         console.error("Error loading cart:", error);
@@ -102,35 +174,18 @@ export default function Page() {
 
   useEffect(() => {
     const { originalPrice, discount, finalPrice } = cart.reduce(
-      (totals, item) => {
+      (totals, item: CartItem) => {
         const selectedVariant = item.variants.find(
-          (variant: any) => variant.material === item.selectedMaterial
-        );
-
-        const sizeStock = selectedVariant?.sizes.find(
-          (size: any) => size.size === item.selectedSize
+          (variant: Variant) => variant.material === item.selectedMaterial
         );
 
         const basePrice = item.cost * item.quantity;
-
         const addOnPrice = (selectedVariant?.addOn || 0) * item.quantity;
 
         const voucher = item.vouchers?.[0];
         const voucherDiscount = voucher
           ? (basePrice + addOnPrice) * (voucher.discount / 100)
           : 0;
-
-        // const bestVoucher = item.vouchers?.reduce(
-        //   (maxVoucher: any, currentVoucher: any) =>
-        //     currentVoucher?.discount > (maxVoucher?.discount || 0)
-        //       ? currentVoucher
-        //       : maxVoucher,
-        //   null
-        // );
-
-        // const voucherDiscount = bestVoucher
-        //   ? (basePrice + addOnPrice) * (bestVoucher.discount / 100)
-        //   : 0;
 
         return {
           originalPrice: totals.originalPrice + basePrice + addOnPrice,
@@ -147,15 +202,30 @@ export default function Page() {
     setTotalFinalPrice(finalPrice);
   }, [cart]);
 
-  const handleOrder = async (e: React.FormEvent) => {
+  useEffect(() => {
+    const calculateShippingFee = (): number => {
+      if (deliveryMethod === "express") return 70000;
+      if (deliveryMethod === "fast") return 35000;
+      return paymentMethod === "vnpay" ? 25000 : 30000;
+    };
+    setShippingFee(calculateShippingFee());
+  }, [deliveryMethod, paymentMethod]);
+
+  const handleOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const details = cart.map((item: any) => ({
+
+    if (!address || !phoneNumber || !city) {
+      alert("Please fill in all shipping information");
+      return;
+    }
+
+    const details = cart.map((item: CartItem) => ({
       id: item._id,
       material: item.selectedMaterial,
       size: item.selectedSize,
       unitPrice: item.cost,
       quantity: item.quantity,
-      discount: item.vouchers?.[0]?.discount || "0",
+      discount: item.vouchers?.[0]?.discount || 0,
     }));
 
     const orderData = {
@@ -165,11 +235,11 @@ export default function Page() {
       status: "pending",
       shippingMethod: deliveryMethod,
       ETD: addDays(3),
-      customer: "6776bd0974de08ccc866a4ab",
+      customer: user?._id || "6776bd0974de08ccc866a4ab",
       staff: "6776bdee74de08ccc866a4be",
-      phoneNumber: phoneNumber,
-      note: note,
-      address: address,
+      phoneNumber,
+      note,
+      address,
     };
 
     console.log(orderData, "check before API");
@@ -184,22 +254,30 @@ export default function Page() {
       });
 
       if (!response.ok) {
-        alert("Order can't create. Please try again.");
+        alert("Order can't be created. Please try again.");
         throw new Error(`Server error: ${response.statusText}`);
       }
+
       const data = await response.json();
 
-      cart.forEach((item: any) => handleRemoveFromCart(item));
-      if (paymentMethod === "vnpay") {
-        const payment = await payVNPay(data._id, totalFinalPrice);
-        router.push(payment.url);
+      // Remove all items from cart
+      for (const item of cart) {
+        await handleRemoveFromCart(item);
       }
-    } catch (error: any) {
-      console.error("Error creating order:", error.message);
+
+      if (paymentMethod === "vnpay") {
+        const payment = await payVNPay(data._id, totalFinalPrice + shippingFee);
+        router.push(payment.url);
+      } else {
+        router.push(`/order-success?orderId=${data._id}`);
+      }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      alert("Failed to create order. Please try again.");
     }
   };
 
-  const handleRemoveFromCart = async (item: any) => {
+  const handleRemoveFromCart = async (item: CartItem) => {
     if (user?._id) {
       try {
         await removeProductFromCart(
@@ -209,9 +287,9 @@ export default function Page() {
           item.selectedSize
         );
 
-        setCart((prevCart: any) =>
+        setCart((prevCart: CartItem[]) =>
           prevCart.filter(
-            (product: any) =>
+            (product: CartItem) =>
               !(
                 product._id === item._id &&
                 product.selectedMaterial === item.selectedMaterial &&
@@ -227,45 +305,36 @@ export default function Page() {
     }
   };
 
-  useEffect(() => {
-    const calculateShippingFee = () => {
-      if (deliveryMethod === "fast") return 35000;
-      if (deliveryMethod === "express") return 70000;
-      return paymentMethod === "vnpay" ? 25000 : 30000;
-    };
-    setShippingFee(calculateShippingFee());
-  }, [deliveryMethod, paymentMethod, city]);
-
-  const calculateGrandTotal = () => totalFinalPrice + shippingFee;
+  const calculateGrandTotal = (): number => totalFinalPrice + shippingFee;
 
   return (
-    <>
-      <div className="bg-[#EDF1F3]  dark:bg-dark-200 h-[250px] flex justify-center items-center">
-        <div>
-          <h1 className="text-dark100_light500 font-light text-[84px]">
+    <div className="min-h-screen">
+      {/* Header */}
+      <div className="bg-[#EDF1F3] dark:bg-dark-200 h-[250px] flex justify-center items-center">
+        <div className="text-center">
+          <h1 className="text-dark100_light500 font-light text-5xl sm:text-6xl md:text-7xl lg:text-[84px]">
             CHECKOUT
           </h1>
-          <div className="flex justify-center items-center">
-            <Link href="/">
+          <div className="flex justify-center items-center gap-2 mt-4">
+            <Link href="/" className="hover:text-primary-100 transition-colors">
               <span className="text-dark100_light500">Home</span>
             </Link>
-            <Icon
-              icon="solar:alt-arrow-right-line-duotone"
-              width="24"
-              height="16"
-            />
+            <ChevronRight className="w-5 h-5 text-dark100_light500" />
             <Link href="/checkout">
               <span className="text-primary-100">Checkout</span>
             </Link>
           </div>
         </div>
       </div>
-      <div className="flex text-dark100_light500 flex-col lg:flex-row justify-between w-full px-10 pb-5">
-        <div className="lg:w-[45%] w-full p-5 rounded-lg mt-8 lg:mt-0">
-          <h2 className="text-[30px] font-normal jost mb-5">
-            SHIPPING INFOMATION
+
+      {/* Content */}
+      <div className="flex text-dark100_light500 flex-col lg:flex-row justify-between w-full px-4 sm:px-6 md:px-10 pb-10 gap-8">
+        {/* Shipping Information */}
+        <div className="lg:w-[45%] w-full p-5 rounded-lg">
+          <h2 className="text-2xl sm:text-3xl font-normal jost mb-5">
+            SHIPPING INFORMATION
           </h2>
-          <form className="flex flex-col space-y-4">
+          <form onSubmit={handleOrder} className="flex flex-col space-y-4">
             <ShippingInfomation
               city={city}
               setCity={setCity}
@@ -275,139 +344,175 @@ export default function Page() {
             />
             <button
               type="submit"
-              onClick={handleOrder}
-              className="bg-primary-100 text-white p-3  hover:bg-primary-200"
+              className="bg-primary-100 text-white p-3 hover:bg-primary-200 transition-colors font-medium rounded-lg"
+              disabled={cart.length === 0}
             >
               Confirm & Proceed to Payment
             </button>
           </form>
         </div>
+
+        {/* Order Information */}
         <div className="lg:w-[50%] w-full p-5 rounded-lg">
-          <h2 className="text-[30px] font-normal jost mb-10">
-            ORDER INFOMATION
+          <h2 className="text-2xl sm:text-3xl font-normal jost mb-6">
+            ORDER INFORMATION
           </h2>
-          {/* {cartState.items.map((item: any) => ( */}
-          {cart.map((item, index) => (
-            <div
-              key={item?._id + index}
-              className="flex items-center justify-between mb-4 border-b pb-4"
-            >
-              <Image
-                src={item?.images}
-                alt={item?.name}
-                width={100}
-                height={120}
-                className="object-cover h-40 rounded"
-              />
-              <div className="ml-4">
-                <h3 className="text-[18px] font-medium">{item?.name}</h3>
-                <span className="text-[16px] text-gray-500">
-                  Quantity: {item?.quantity}
-                </span>
+
+          {cart.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">Your cart is empty</p>
+              <Link href="/products">
+                <button className="mt-4 px-6 py-3 bg-primary-100 text-white rounded-lg hover:bg-primary-200">
+                  Continue Shopping
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <>
+              {/* Cart Items */}
+              <div className="space-y-4 mb-6">
+                {cart.map((item: CartItem, index: number) => (
+                  <div
+                    key={`${item._id}-${index}`}
+                    className="flex items-center justify-between border-b pb-4 gap-4"
+                  >
+                    <div className="relative w-20 h-24 flex-shrink-0 rounded overflow-hidden">
+                      <Image
+                        src={item.images || "/placeholder.jpg"}
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                        sizes="80px"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-medium line-clamp-1">
+                        {item.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Qty: {item.quantity}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {item.selectedMaterial} • {item.selectedSize}
+                      </p>
+                    </div>
+                    <span className="text-lg font-semibold text-primary-100">
+                      {formatCurrency(item.cost * item.quantity)}
+                    </span>
+                  </div>
+                ))}
               </div>
-              <span className="text-[18px] font-semibold text-primary-100">
-                {formatCurrency(item.cost * item.quantity)}
-                {/* {item?.cost * item?.quantity} */}
-              </span>
-            </div>
-          ))}
 
-          <div className="mt-6">
-            <div className="text-[18px] font-normal flex justify-between mb-2">
-              <span>Total Original Price:</span>
-              <span>{formatCurrency(totalOriginalPrice)}</span>
-            </div>
-            <div className="text-[18px] font-normal flex justify-between mb-2">
-              <span>Total Discount:</span>
-              <span className="text-red-500">
-                -{formatCurrency(totalDiscount)}
-              </span>
-            </div>
-            <div className="text-[18px] font-medium flex justify-between mb-4">
-              <span>Total Final Price:</span>
-              <span>{formatCurrency(totalFinalPrice)}</span>
-            </div>
-          </div>
+              {/* Price Summary */}
+              <div className="bg-gray-50 dark:bg-dark-300 p-4 rounded-lg space-y-3">
+                <div className="flex justify-between text-base">
+                  <span>Total Original Price:</span>
+                  <span>{formatCurrency(totalOriginalPrice)}</span>
+                </div>
+                {totalDiscount > 0 && (
+                  <div className="flex justify-between text-base">
+                    <span>Total Discount:</span>
+                    <span className="text-red-500">
+                      -{formatCurrency(totalDiscount)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between text-base font-medium">
+                  <span>Subtotal:</span>
+                  <span>{formatCurrency(totalFinalPrice)}</span>
+                </div>
+                <hr className="border-gray-300 dark:border-gray-600" />
+                <div className="flex justify-between text-base">
+                  <span>Shipping Fee:</span>
+                  <span>{formatCurrency(shippingFee)}</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold pt-2">
+                  <span>Grand Total:</span>
+                  <span className="text-primary-100">
+                    {formatCurrency(calculateGrandTotal())}
+                  </span>
+                </div>
+              </div>
 
-          <div className="mt-6">
-            <label className="block mb-2 text-[18px] font-medium">
-              Payment Method:
-            </label>
-            <select
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              className="w-full p-3 border rounded-none bg-transparent "
-            >
-              <option className="bg-transparent" value="cod">
-                Cash on Delivery (30k shipping fee)
-              </option>
-              <option className="bg-transparent" value="vnpay">
-                VNPay (25k shipping fee)
-              </option>
-            </select>
-          </div>
-
-          <div className="mt-6">
-            <label className="block mb-2 text-[18px] font-medium">
-              Delivery Method:
-            </label>
-            <div className="space-y-2">
-              <div>
-                <input
-                  type="radio"
-                  id="standard"
-                  name="delivery"
-                  value="standard"
-                  checked={deliveryMethod === "standard"}
-                  onChange={(e) => setDeliveryMethod(e.target.value)}
-                />
-                <label htmlFor="standard" className="ml-2">
-                  Standard Delivery (No extra fee)
+              {/* Payment Method */}
+              <div className="mt-6">
+                <label className="block mb-2 text-lg font-medium">
+                  Payment Method:
                 </label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) =>
+                    setPaymentMethod(e.target.value as PaymentMethod)
+                  }
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-dark-300 text-dark100_light500 focus:outline-none focus:ring-2 focus:ring-primary-100"
+                >
+                  <option value="cod">
+                    Cash on Delivery (30k shipping fee)
+                  </option>
+                  <option value="vnpay">VNPay (25k shipping fee)</option>
+                </select>
               </div>
-              <div>
-                <input
-                  type="radio"
-                  id="fast"
-                  name="delivery"
-                  value="fast"
-                  checked={deliveryMethod === "fast"}
-                  onChange={(e) => setDeliveryMethod(e.target.value)}
-                />
-                <label htmlFor="fast" className="ml-2">
-                  Fast Delivery (+5k shipping fee)
-                </label>
-              </div>
-              <div>
-                <input
-                  type="radio"
-                  id="express"
-                  name="delivery"
-                  value="express"
-                  checked={deliveryMethod === "express"}
-                  onChange={(e) => setDeliveryMethod(e.target.value)}
-                  disabled={city.toLowerCase() !== "ho chi minh"}
-                />
-                <label htmlFor="express" className="ml-2">
-                  Express Delivery (30k shipping fee, only available in Ho Chi
-                  Minh City)
-                </label>
-              </div>
-            </div>
-          </div>
 
-          <div className="mt-6">
-            <div className="text-[18px] font-medium flex justify-between">
-              <span>Shipping Fee:</span>
-              <span>₫{shippingFee.toLocaleString()}</span>
-            </div>
-            <div className="text-[18px] font-semibold flex justify-between mt-4">
-              <span>Grand Total:</span>
-              <span>₫{calculateGrandTotal().toLocaleString()}</span>
-            </div>
-          </div>
+              {/* Delivery Method */}
+              <div className="mt-6">
+                <label className="block mb-3 text-lg font-medium">
+                  Delivery Method:
+                </label>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-300">
+                    <input
+                      type="radio"
+                      name="delivery"
+                      value="standard"
+                      checked={deliveryMethod === "standard"}
+                      onChange={(e) =>
+                        setDeliveryMethod(e.target.value as DeliveryMethod)
+                      }
+                      className="w-4 h-4 text-primary-100"
+                    />
+                    <span>Standard Delivery (No extra fee)</span>
+                  </label>
+                  <label className="flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-300">
+                    <input
+                      type="radio"
+                      name="delivery"
+                      value="fast"
+                      checked={deliveryMethod === "fast"}
+                      onChange={(e) =>
+                        setDeliveryMethod(e.target.value as DeliveryMethod)
+                      }
+                      className="w-4 h-4 text-primary-100"
+                    />
+                    <span>Fast Delivery (+5k shipping fee)</span>
+                  </label>
+                  <label
+                    className={`flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg ${
+                      city.toLowerCase() === "ho chi minh"
+                        ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-300"
+                        : "opacity-50 cursor-not-allowed"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="delivery"
+                      value="express"
+                      checked={deliveryMethod === "express"}
+                      onChange={(e) =>
+                        setDeliveryMethod(e.target.value as DeliveryMethod)
+                      }
+                      disabled={city.toLowerCase() !== "ho chi minh"}
+                      className="w-4 h-4 text-primary-100"
+                    />
+                    <span>
+                      Express Delivery (40k extra, Ho Chi Minh City only)
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

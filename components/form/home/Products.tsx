@@ -1,28 +1,42 @@
 import React, { useState } from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination } from "swiper/modules";
 import ProductCard from "@/components/card/product/ProductCard";
+import { ProductResponse } from "@/dto/ProductDTO";
 
-const Products = ({ productsData }: { productsData: any[] }) => {
-  const [active, setActive] = useState("newArrivals");
+interface ProductsProps {
+  productsData: ProductResponse[];
+}
+
+const Products = ({ productsData }: ProductsProps) => {
+  const [active, setActive] = useState<"newArrivals" | "bestSeller" | "onSale">(
+    "newArrivals"
+  );
 
   const newArrivals = productsData
     .slice()
     .sort(
-      (a: any, b: any) =>
+      (a: ProductResponse, b: ProductResponse) =>
         new Date(b.createAt).getTime() - new Date(a.createAt).getTime()
     );
 
   const bestSeller = productsData
     .slice()
-    .sort((a: any, b: any) => b.sales - a.sales);
+    .sort(
+      (a: ProductResponse, b: ProductResponse) =>
+        (b.sales || 0) - (a.sales || 0)
+    );
 
   const onSale = productsData
     .slice()
-    .filter((product: any) => product.vouchers?.length > 0)
-    .sort((a: any, b: any) => b.vouchers.length - a.vouchers.length);
+    .filter(
+      (product: ProductResponse) =>
+        product.vouchers && product.vouchers.length > 0
+    )
+    .sort(
+      (a: ProductResponse, b: ProductResponse) =>
+        (b.vouchers?.length || 0) - (a.vouchers?.length || 0)
+    );
 
-  const getProducts = () => {
+  const getProducts = (): ProductResponse[] => {
     switch (active) {
       case "newArrivals":
         return newArrivals;
@@ -37,66 +51,71 @@ const Products = ({ productsData }: { productsData: any[] }) => {
 
   return (
     <div className="mt-[150px] w-[95%] mx-auto">
-      <div className="flex">
+      <div className="flex items-center mb-6">
         <p className="jost text-[30px] font-normal text-dark100_light500">
           PRODUCTS
         </p>
-        <div className="border-b-2 border-primary-100 ml-auto">
-          <p className="font-medium text-dark100_light500 text-[14px] mt-5">
+        <div className="border-b-2 border-primary-100 ml-auto cursor-pointer hover:opacity-80 transition-opacity">
+          <p className="font-medium text-dark100_light500 text-[14px] mt-5 pb-1">
             See all
           </p>
         </div>
       </div>
-      <div className="flex justify-center">
-        <div className="flex mt-4">
-          <div
-            className={`font-normal jost text-[20px] cursor-pointer mr-12 ${
+
+      <div className="flex justify-center mb-8">
+        <div className="flex flex-wrap gap-6 sm:gap-8 md:gap-12">
+          <button
+            className={`font-normal jost text-base sm:text-lg md:text-[20px] cursor-pointer transition-colors relative ${
               active === "newArrivals"
                 ? "text-primary-100"
-                : "text-dark100_light500"
+                : "text-dark100_light500 hover:text-primary-100/70"
             }`}
             onClick={() => setActive("newArrivals")}
           >
             NEW ARRIVALS
-          </div>
-          <div
-            className={`font-normal jost text-[20px] cursor-pointer mr-12 ${
+            {active === "newArrivals" && (
+              <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-primary-100"></span>
+            )}
+          </button>
+          <button
+            className={`font-normal jost text-base sm:text-lg md:text-[20px] cursor-pointer transition-colors relative ${
               active === "bestSeller"
                 ? "text-primary-100"
-                : "text-dark100_light500"
+                : "text-dark100_light500 hover:text-primary-100/70"
             }`}
             onClick={() => setActive("bestSeller")}
           >
             BEST SELLER
-          </div>
-          <div
-            className={`font-normal jost text-[20px] cursor-pointer ${
-              active === "onSale" ? "text-primary-100" : "text-dark100_light500"
+            {active === "bestSeller" && (
+              <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-primary-100"></span>
+            )}
+          </button>
+          <button
+            className={`font-normal jost text-base sm:text-lg md:text-[20px] cursor-pointer transition-colors relative ${
+              active === "onSale"
+                ? "text-primary-100"
+                : "text-dark100_light500 hover:text-primary-100/70"
             }`}
             onClick={() => setActive("onSale")}
           >
             ON SALE
-          </div>
+            {active === "onSale" && (
+              <span className="absolute -bottom-2 left-0 right-0 h-0.5 bg-primary-100"></span>
+            )}
+          </button>
         </div>
       </div>
-      {/* <Swiper
-        spaceBetween={20}
-        slidesPerView={4}
-        // navigation={true}
-        pagination={{ clickable: true }}
-        modules={[Navigation, Pagination]}
-        className="mt-[30px] w-full "
-      > */}
-      <div className="flex w-full overflow-x-auto space-x-7 mt-4">
+
+      <div className="flex w-full overflow-x-auto space-x-4 sm:space-x-6 md:space-x-7 pb-4 scrollbar-thin scrollbar-thumb-primary-100 scrollbar-track-gray-200 dark:scrollbar-track-dark-300">
         {getProducts().map((product) => (
-          <div key={product._id} className="min-w-[250px]">
-            {/* Adjust width to your needs */}
-            <ProductCard key={product._id} item={product} />
+          <div
+            key={product._id}
+            className="min-w-[200px] sm:min-w-[230px] md:min-w-[250px] flex-shrink-0"
+          >
+            <ProductCard item={product} />
           </div>
         ))}
       </div>
-
-      {/* </Swiper> */}
     </div>
   );
 };

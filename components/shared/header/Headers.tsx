@@ -37,7 +37,7 @@ const Headers = ({
           {title}
         </h1>
         <p className="text-primary-100 font-medium text-[14px] hidden sm:block">
-          Let's check your update today!
+          Let`&apos;s check your update today!
         </p>
       </div>
       <div className="flex gap-6">

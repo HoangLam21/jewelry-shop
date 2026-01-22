@@ -6,16 +6,20 @@ import Image from "next/image";
 import LabelInformation from "@/components/shared/label/LabelInformation";
 import MyButton from "@/components/shared/button/MyButton";
 import InputEdit from "@/components/shared/input/InputEdit";
-import { Customer, defaultDetail } from "./CustomerList";
 import {
   getDetailCustomer,
-  updateInfoCustomer
+  updateInfoCustomer,
 } from "@/lib/service/customer.service";
-
+const defaultDetail: CreateCustomer = {
+  fullName: "",
+  phoneNumber: "",
+  email: "",
+  address: "",
+};
 const EditCustomerInformation = () => {
   const { id } = useParams<{ id: string }>() as { id: string };
-  const [detail, setDetail] = useState<Customer>(defaultDetail);
-  const [updateCustomer, setUpdateCustomer] = useState<Customer>(defaultDetail);
+  const [detail, setDetail] = useState<any>(defaultDetail);
+  const [updateCustomer, setUpdateCustomer] = useState<any>(defaultDetail);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,7 +30,7 @@ const EditCustomerInformation = () => {
             (total, order) => total + order.cost,
             0
           );
-          const data: Customer = {
+          const data: any = {
             id: result._id,
             fullName: result.fullName,
             phoneNumber: result.phoneNumber,
@@ -39,14 +43,19 @@ const EditCustomerInformation = () => {
               id: order._id,
               createAt: order.createAt,
               createBy: order.staff,
-              cost: order.cost
-            }))
+              cost: order.cost,
+            })),
           };
           setDetail(data);
         }
-      } catch (err: any) {
-        console.error("Error fetching data:", err);
-        const errorMessage = err?.message || "An unexpected error occurred.";
+      } catch (error) {
+        console.error("Error fetching data:", error);
+
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.";
+
         alert(`Error fetching data: ${errorMessage}`);
       }
     };
@@ -56,7 +65,7 @@ const EditCustomerInformation = () => {
     if (updateCustomer) {
       setUpdateCustomer({
         ...updateCustomer,
-        [e.target.name]: e.target.value
+        [e.target.name]: e.target.value,
       });
     }
   };
@@ -67,16 +76,16 @@ const EditCustomerInformation = () => {
         fullName: updateCustomer.fullName,
         phoneNumber: updateCustomer.phoneNumber,
         email: updateCustomer.email,
-        address: updateCustomer.address
+        address: updateCustomer.address,
       };
 
       const result = await updateInfoCustomer(id, data);
       if (result) {
-        setDetail((prev) => {
+        setDetail((prev: any) => {
           if (prev) {
             return {
               ...prev,
-              ...data
+              ...data,
             };
           }
           return prev;

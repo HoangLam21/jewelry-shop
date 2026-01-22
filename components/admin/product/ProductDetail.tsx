@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React from "react";
 import { ProductData, Variant } from "./ProductList";
 import { formatCurrency } from "@/lib/utils";
 import { useProductManageContext } from "@/contexts/ProductManageContext";
@@ -42,16 +41,16 @@ const ProductDetail = ({ detailProduct, onBack, onEdit }: Props) => {
     { header: "Material", accessor: "material" },
     {
       header: "Add on",
-      accessor: "addon"
+      accessor: "addon",
     },
     {
       header: "Size",
-      accessor: "size"
+      accessor: "size",
     },
     {
       header: "Stock",
-      accessor: "stock"
-    }
+      accessor: "stock",
+    },
   ];
   const renderRow = (variant: Variant) => {
     return (

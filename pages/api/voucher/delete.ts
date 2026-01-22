@@ -20,9 +20,13 @@ async function handler(
     } else {
       return res.status(405).json({ error: "Method not allowed" });
     }
-  } catch (error: any) {
-    console.error("Error deleting Voucher: ", error);
-    return res.status(500).json({ error: error.message });
+  } catch (error) {
+    console.error("Error deleting Voucher:", error);
+
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred.";
+
+    return res.status(500).json({ error: message });
   }
 }
 

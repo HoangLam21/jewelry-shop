@@ -6,7 +6,6 @@ import Image from "next/image";
 import LabelInformation from "@/components/shared/label/LabelInformation";
 import MyButton from "@/components/shared/button/MyButton";
 import InputEdit from "@/components/shared/input/InputEdit";
-import InputDate from "@/components/shared/input/InputDate";
 import InputSelection from "@/components/shared/input/InputSelection";
 import { CreateProvider } from "@/dto/ProviderDTO";
 import { FileContent } from "@/dto/ProductDTO";
@@ -121,9 +120,14 @@ const EditProviderInformation = () => {
         console.log(data, "data of create provider");
         const result = await updatedProvider(id, data);
         alert("Provider updated successfully, but no avatar uploaded.");
-      } catch (err: any) {
-        console.error("Error creating data:", err);
-        const errorMessage = err?.message || "An unexpected error occurred.";
+      } catch (error) {
+        console.error("Error creating data:", error);
+
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.";
+
         alert(`Error creating data: ${errorMessage}`);
       }
     }

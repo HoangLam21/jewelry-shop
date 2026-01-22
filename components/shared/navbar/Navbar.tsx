@@ -51,7 +51,7 @@ const Navbar = () => {
   return (
     <nav className="flex-between background-light700_dark300 fixed z-50 h-[79px] w-full gap-5 border-b p-6 dark:border-transparent sm:px-5 ">
       <Link href="/" className="flex items-center gap-1 pl-5">
-        <p className="text-dark100_light500 text-3xl logo">JewelryStore</p>
+        <p className="text-dark100_light500 text-3xl jost">JewelryStore</p>
         <p className="text-primary-100 text-3xl">.</p>
       </Link>
 

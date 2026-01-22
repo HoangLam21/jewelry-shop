@@ -1,20 +1,17 @@
 "use client";
 import InputEdit from "@/components/shared/input/InputEdit";
-import InputSelection from "@/components/shared/input/InputSelection";
 import InputUnEdit from "@/components/shared/input/InputUnEdit";
 import TableImport from "@/components/shared/table/TableImport";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@iconify/react/dist/iconify.js";
 import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { ProductData, Variant } from "./ProductList";
 import { formatCurrency, parseCurrency } from "@/lib/utils";
 import ConfirmModal, { ConfirmModalProps } from "./ConfirmModal";
 import AddVariant from "./AddVariant";
 import { updateInfoProduct } from "@/lib/service/product.service";
 import { CreateProduct, FileContent } from "@/dto/ProductDTO";
-import { fetchProvider } from "@/lib/service/provider.service";
-import { fetchVoucher } from "@/lib/service/voucher.service";
 import { useProductManageContext } from "@/contexts/ProductManageContext";
 import InputSelectionProduct from "@/components/shared/input/InputSelectionProduct";
 
@@ -28,7 +25,7 @@ const defaultCombine: CombinedVariant = {
   material: "",
   size: "",
   stock: 0,
-  addOn: 0
+  addOn: 0,
 };
 // 1. Hàm tổ hợp từ `variantList`
 export const combineVariants = (variantList: Variant[]): CombinedVariant[] => {
@@ -37,7 +34,7 @@ export const combineVariants = (variantList: Variant[]): CombinedVariant[] => {
       material: variant.material,
       size: size.size,
       stock: size.stock,
-      addOn: variant.addOn
+      addOn: variant.addOn,
     }))
   );
 };
@@ -54,7 +51,7 @@ export const groupVariants = (combinedList: CombinedVariant[]): Variant[] => {
       acc.push({
         material: item.material,
         addOn: item.addOn,
-        sizes: [{ size: item.size, stock: item.stock }]
+        sizes: [{ size: item.size, stock: item.stock }],
       });
     }
     return acc;
@@ -114,7 +111,7 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
         width: "",
         height: "",
         format: file.type.split("/")[1] || "",
-        type: file.type
+        type: file.type,
       }));
       setImageList((prevList) => [...prevList, ...newFiles]);
     }
@@ -136,7 +133,7 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
   ) => {
     setItem((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -151,7 +148,7 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
     setConfirm: () => {},
     handleAction: () => {},
     name: "",
-    action: ""
+    action: "",
   });
   const handleConfirmDelete = (material: string, size: string) => {
     setIsConfirm(true);
@@ -159,7 +156,7 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
       setConfirm: setIsConfirm,
       handleAction: () => handleDelete(material, size),
       name: " this variant",
-      action: "remove"
+      action: "remove",
     });
   };
   const handleAddVariant = () => {
@@ -171,8 +168,8 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
     { header: "Image", accessor: "image" },
     {
       header: "Name",
-      accessor: "name"
-    }
+      accessor: "name",
+    },
   ];
   const renderRow = (img: FileContent) => (
     <tr
@@ -207,16 +204,16 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
     { header: "Material", accessor: "material" },
     {
       header: "Size",
-      accessor: "size"
+      accessor: "size",
     },
     {
       header: "Stock",
-      accessor: "stock"
+      accessor: "stock",
     },
     {
       header: "Added",
-      accessor: "addOn"
-    }
+      accessor: "addOn",
+    },
   ];
   const renderRowVariant = (data: CombinedVariant) => {
     return (
@@ -268,7 +265,7 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
           provider: item.provider || undefined,
           category: detailProduct.categoryId || undefined,
           collections: item.collection,
-          variants: groupVariants(combinedData)
+          variants: groupVariants(combinedData),
         }).filter(([_, value]) => value !== undefined)
       ) as unknown as CreateProduct;
       console.log(data);
@@ -289,7 +286,7 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
                   vouchers: item.vouchers,
                   provider: item.provider,
                   category: detailProduct.category || "",
-                  variants: groupVariants(combinedData)
+                  variants: groupVariants(combinedData),
                 }
               : product
           )
@@ -308,7 +305,7 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
       setConfirm: setIsConfirm,
       handleAction: handleSave,
       name: " this product",
-      action: "update"
+      action: "update",
     });
   };
   return (
@@ -391,7 +388,7 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
                       onChange={(value) => {
                         setItem((prev) => ({
                           ...prev!,
-                          collection: value
+                          collection: value,
                         }));
                       }}
                     />
@@ -405,7 +402,7 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
                       onChange={(value) => {
                         setItem((prev) => ({
                           ...prev!,
-                          vouchers: value
+                          vouchers: value,
                         }));
                       }}
                     />
@@ -426,7 +423,7 @@ const ProductEdit = ({ detailProduct, onBack, setList }: Props) => {
                       onChange={(value) => {
                         setItem((prev) => ({
                           ...prev!,
-                          provider: value
+                          provider: value,
                         }));
                       }}
                     />

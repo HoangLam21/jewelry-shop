@@ -1,7 +1,10 @@
 import { getVouchers } from "@/lib/actions/voucher.action";
 import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   try {
     if (req.method === "GET") {
       const vouchers = await getVouchers();
@@ -9,8 +12,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else {
       return res.status(405).json({ error: "Method not allowed" });
     }
-  } catch (error: any) {
-    console.error("Error fetching Vouchers: ", error);
-    return res.status(500).json({ error: error.message });
+  } catch (error) {
+    console.error("Error fetching Vouchers:", error);
+
+    const message =
+      error instanceof Error ? error.message : "An unexpected error occurred.";
+
+    return res.status(500).json({ error: message });
   }
 }

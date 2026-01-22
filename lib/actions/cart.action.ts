@@ -387,7 +387,7 @@ export const increaseProductQuantity = async (
   try {
     await connectToDatabase();
 
-    let cart = await Cart.findOne({ user: userId });
+    const cart = await Cart.findOne({ user: userId });
 
     if (!cart) {
       throw new Error("Cart not found");
@@ -423,7 +423,7 @@ export const decreaseProductQuantity = async (
   try {
     await connectToDatabase();
 
-    let cart = await Cart.findOne({ user: userId });
+    const cart = await Cart.findOne({ user: userId });
 
     if (!cart) {
       throw new Error("Cart not found");
@@ -463,7 +463,7 @@ export const removeProductFromCart = async (
   try {
     await connectToDatabase();
 
-    let cart = await Cart.findOne({ user: userId });
+    const cart = await Cart.findOne({ user: userId });
 
     if (!cart) {
       throw new Error("Cart not found");

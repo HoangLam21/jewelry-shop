@@ -2,7 +2,6 @@
 import TitleSession from "@/components/shared/label/TitleSession";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { StaffData } from "@/constants/data";
 import Image from "next/image";
 import LabelInformation from "@/components/shared/label/LabelInformation";
 import MyButton from "@/components/shared/button/MyButton";
@@ -11,7 +10,7 @@ import InputDate from "@/components/shared/input/InputDate";
 import {
   CategoryResponse,
   CreateCategory,
-  ProductAdditionToCategory
+  ProductAdditionToCategory,
 } from "@/dto/CategoryDTO";
 import { defaultCategory } from "./CategoryList";
 import { ProductResponse } from "@/dto/ProductDTO";
@@ -26,7 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import {
   addProductToCategory,
-  createCategory
+  createCategory,
 } from "@/lib/service/category.service";
 import ConfirmModal, { ConfirmModalProps } from "../product/ConfirmModal";
 
@@ -34,7 +33,7 @@ const columns = [
   { header: "Product ID", accessor: "id" },
   { header: "Name", accessor: "name" },
   { header: "Collection", accessor: "collection" },
-  { header: "Price", accessor: "price" }
+  { header: "Price", accessor: "price" },
 ];
 
 const AddCategoryInformation = () => {
@@ -60,14 +59,17 @@ const AddCategoryInformation = () => {
             provider: item.provider ? item.provider._id : "",
             category: item.category,
             variants: item.variants,
-            categoryId:""
+            categoryId: "",
           }));
 
           setProductList(data);
         }
-      } catch (err: any) {
-        console.error("Error fetching data:", err);
-        const errorMessage = err?.message || "An unexpected error occurred.";
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.";
         alert(`Error fetching data: ${errorMessage}`);
       }
     };
@@ -79,7 +81,7 @@ const AddCategoryInformation = () => {
     if (newDetail) {
       setNewDetail({
         ...newDetail,
-        [e.target.name]: e.target.value
+        [e.target.name]: e.target.value,
       });
     }
   };
@@ -109,7 +111,7 @@ const AddCategoryInformation = () => {
     direction: "ascending" | "descending";
   }>({
     key: "id",
-    direction: "ascending"
+    direction: "ascending",
   });
 
   type SortableKeys = "id" | "name" | "price" | "collection";
@@ -174,7 +176,7 @@ const AddCategoryInformation = () => {
     indexOfLastItem,
     indexOfFirstItem,
     totalPages: Math.ceil(filterData.length / itemsPerPage),
-    dataLength: filterData.length
+    dataLength: filterData.length,
   };
 
   const renderRow = (item: ProductData) => (
@@ -207,13 +209,13 @@ const AddCategoryInformation = () => {
     try {
       const params: CreateCategory = {
         name: newDetail.name,
-        hot: newDetail.hot
+        hot: newDetail.hot,
       };
       const result = await createCategory(params);
       if (result) {
         const param: ProductAdditionToCategory = {
           categoryId: result._id,
-          productId: selectedIds
+          productId: selectedIds,
         };
         const addedProduct = await addProductToCategory(param);
         console.log("Added product:", addedProduct.product);
@@ -221,9 +223,12 @@ const AddCategoryInformation = () => {
       } else {
         alert("Can't create category.");
       }
-    } catch (err: any) {
-      console.error("Error create data:", err);
-      const errorMessage = err?.message || "An unexpected error occurred.";
+    } catch (error) {
+      console.error("Error create data:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred.";
       alert(`Error create data: ${errorMessage}`);
     }
   };
@@ -232,7 +237,7 @@ const AddCategoryInformation = () => {
     setConfirm: () => {},
     handleAction: () => {},
     name: "",
-    action: ""
+    action: "",
   });
   const handleConfirmCreate = () => {
     setIsConfirm(true);
@@ -240,7 +245,7 @@ const AddCategoryInformation = () => {
       setConfirm: setIsConfirm,
       handleAction: () => handleCreate(),
       name: "new category",
-      action: "create"
+      action: "create",
     });
   };
 
