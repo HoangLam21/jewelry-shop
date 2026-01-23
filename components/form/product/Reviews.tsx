@@ -138,6 +138,7 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import CreateReview from "./CreateReview";
 import { fetchOrder } from "@/lib/service/order.service";
+import { useUser } from "@clerk/nextjs";
 import { Star, MessageSquare } from "lucide-react";
 
 export interface CommentData {
@@ -170,6 +171,7 @@ const Reviews: React.FC<ReviewsProps> = ({
   setTotalReviews,
   ratingStats: initialStats,
 }) => {
+  const { user, isLoaded } = useUser();
   const params = useParams();
   const id = (productId || params?.id) as string;
 
@@ -193,20 +195,37 @@ const Reviews: React.FC<ReviewsProps> = ({
         const data = await getReviewById(id);
 
         // Map reviews data
-        const reviews: CommentData[] = data.map((item: any) => ({
-          id: item._id,
-          userId: item.userId?._id || "",
-          userName: item.userId?.fullName || "Anonymous User",
-          avatar: item.userId?.avatar || "/assets/images/avatar.jpg",
-          productId: item.productId,
-          rating: item.point,
-          createAt: new Date(item.createAt),
-          productName: "",
-          size: "",
-          material: "",
-          comment: item.content || "No comment provided",
-          image: item.images?.map((img: any) => img.url) || [],
-        }));
+        const reviews: CommentData[] = data.map((item: any) => {
+          // Đảm bảo lấy đúng fullName từ customer
+          const customerName = item.userId?.fullName ||
+            item.userId?.name ||
+            (item.userId?.firstName && item.userId?.lastName
+              ? `${item.userId.firstName} ${item.userId.lastName}`.trim()
+              : null) ||
+            "Anonymous User";
+
+          console.log("[Reviews] Review item:", {
+            ratingId: item._id,
+            userId: item.userId?._id,
+            customerName: customerName,
+            customerData: item.userId
+          });
+
+          return {
+            id: item._id,
+            userId: item.userId?._id || "",
+            userName: customerName,
+            avatar: item.userId?.avatar || "/assets/images/avatar.jpg",
+            productId: item.productId,
+            rating: item.point,
+            createAt: new Date(item.createAt),
+            productName: "",
+            size: "",
+            material: "",
+            comment: item.content || "No comment provided",
+            image: item.images?.map((img: any) => img.url) || [],
+          };
+        });
 
         setComments(reviews);
 
@@ -230,26 +249,59 @@ const Reviews: React.FC<ReviewsProps> = ({
   }, [id, setTotalReviews]);
 
   useEffect(() => {
-    let userId = localStorage.getItem("userId");
-    if (!userId) userId = "676c26abbc53a1913f2c9581"; // Test user
-
     const checkUserOrder = async () => {
+      // Chỉ check order nếu user đã đăng nhập
+      if (!isLoaded || !user) {
+        return;
+      }
+
+      // Lấy userId từ userData trong localStorage (được set từ home page)
+      let userId: string | null = null;
+      try {
+        const userDataStr = localStorage.getItem("userData");
+        if (userDataStr) {
+          const userData = JSON.parse(userDataStr);
+          userId = userData._id;
+        }
+      } catch (error) {
+        console.error("Error parsing userData from localStorage:", error);
+      }
+
+      // Nếu không có trong localStorage, fetch từ API
+      if (!userId && user.id) {
+        try {
+          const response = await fetch(`/api/auth/role?userId=${user.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            userId = data.userIdInDb || null;
+          }
+        } catch (error) {
+          console.error("Error fetching userId from API:", error);
+        }
+      }
+
+      // Nếu vẫn không có userId, không check order (user chưa đăng nhập hoặc không phải customer)
+      if (!userId) {
+        console.log("[Reviews] No userId found, skipping order check");
+        return;
+      }
+
       try {
         const orderList: any = await fetchOrder();
         if (orderList) {
           const userOrders = orderList.filter(
-            (item: any) => item.customer._id === userId
+            (item: any) => item.customer?._id === userId
           );
 
           if (userOrders.length > 0) {
-            setUserName(userOrders[0].customer.fullName);
+            setUserName(userOrders[0].customer?.fullName || "");
 
             for (const order of userOrders) {
-              const productList = order.products.map(
+              const productList = order.products?.map(
                 (item: any) => item.product
-              );
+              ) || [];
               const exists = productList.some(
-                (product: any) => product._id === id
+                (product: any) => product?._id === id
               );
               if (exists) {
                 setCheckProductOrder(true);
@@ -264,7 +316,7 @@ const Reviews: React.FC<ReviewsProps> = ({
     };
 
     checkUserOrder();
-  }, [id]);
+  }, [id, user, isLoaded]);
 
   if (loading) {
     return (
@@ -289,11 +341,10 @@ const Reviews: React.FC<ReviewsProps> = ({
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
                     key={star}
-                    className={`w-5 h-5 ${
-                      star <= Math.round(ratingStats.averageRating)
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-300"
-                    }`}
+                    className={`w-5 h-5 ${star <= Math.round(ratingStats.averageRating)
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-300"
+                      }`}
                   />
                 ))}
               </div>
@@ -308,7 +359,7 @@ const Reviews: React.FC<ReviewsProps> = ({
               {[5, 4, 3, 2, 1].map((rating) => {
                 const count =
                   ratingStats.distribution[
-                    rating as keyof typeof ratingStats.distribution
+                  rating as keyof typeof ratingStats.distribution
                   ];
                 const percentage =
                   ratingStats.totalReviews > 0
@@ -391,6 +442,7 @@ const Reviews: React.FC<ReviewsProps> = ({
           setOpenReview={setOpenReview}
           setComments={setComments}
           userName={userName}
+          productId={id}
         />
       )}
     </div>

@@ -87,19 +87,19 @@ const InputSelection: React.FC<InputSelectionProps> = ({
       )}
     >
       <p className="text-text-dark-400">{titleInput}:</p>
-      <div className="relative">
+      <div className="relative z-10">
         <input
           ref={inputRef}
           type="text"
           value={getDisplayValue()}
           placeholder="Select an option"
-          className="h-[34px] w-full border border-gray-300 rounded-lg px-3 bg-white focus:outline-none cursor-pointer"
+          className="h-[34px] w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none cursor-pointer"
           onClick={handleDropdownClick}
           readOnly
         />
         <span
           onClick={handleDropdownClick}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-text-dark-500 cursor-pointer"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-text-dark-500 cursor-pointer z-10"
         >
           <Icon icon="uil:angle-down" className="text-2xl text-dark-500" />
         </span>
@@ -108,7 +108,7 @@ const InputSelection: React.FC<InputSelectionProps> = ({
           <div
             ref={dropdownRef}
             className={classNames(
-              "absolute right-0 top-full mt-2 rounded-lg border border-gray-300 bg-white shadow-lg z-50 w-fit max-h-60 overflow-auto"
+              "absolute left-0 right-0 top-full mt-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-xl z-[10000] min-w-full max-h-60 overflow-auto"
             )}
           >
             <ul>

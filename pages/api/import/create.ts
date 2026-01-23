@@ -47,6 +47,13 @@ async function handler(
   if (req.method === "POST") {
     try {
       const data = req.body;
+      console.log("[Import Create] Request data:", {
+        staff: data.staff,
+        provider: data.provider,
+        detailsCount: data.details?.length || 0,
+        authRole: auth.role,
+        userIdInDb: auth.userIdInDb
+      });
       
       // Tự động lấy staff ID từ user đang đăng nhập
       // Nếu user là staff, dùng staff ID của họ
@@ -57,8 +64,9 @@ async function handler(
         console.log(`[Import Create] Auto-setting staff ID to authenticated staff: ${auth.userIdInDb}`);
       } else if (auth.role === "admin") {
         // Admin có thể tạo import cho staff khác, nhưng nếu không có staff ID thì báo lỗi
-        if (!data.staff) {
-          return res.status(400).json({ error: "Staff ID is required when creating import as admin" });
+        if (!data.staff || data.staff === "" || data.staff.trim() === "") {
+          console.log("[Import Create] Admin creating import without staff ID");
+          return res.status(400).json({ error: "Staff ID is required when creating import as admin. Please select a staff member." });
         }
         console.log(`[Import Create] Admin creating import for staff: ${data.staff}`);
       }

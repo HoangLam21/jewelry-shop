@@ -16,6 +16,7 @@ interface props {
   userName: string;
   setOpenReview: React.Dispatch<React.SetStateAction<boolean>>;
   setComments: React.Dispatch<React.SetStateAction<CommentData[]>>;
+  productId?: string;
 }
 interface ContentReview {
   rating: number;
@@ -25,8 +26,10 @@ const defaultContent = {
   rating: 0,
   comment: ""
 };
-const CreateReview = ({ setOpenReview, setComments, userName }: props) => {
-  const { id } = useParams<{ id: string }>() as { id: string };
+const CreateReview = ({ setOpenReview, setComments, userName, productId }: props) => {
+  const params = useParams<{ id?: string; slug?: string }>();
+  // Ưu tiên productId từ props, sau đó thử id từ params, cuối cùng là slug
+  const id = productId || params?.id || params?.slug || "";
   const [selectedFiles, setSelectedFiles] = useState<FileContent[]>([]);
   const [newReview, setNewReview] = useState<ContentReview>(defaultContent);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -51,10 +54,25 @@ const CreateReview = ({ setOpenReview, setComments, userName }: props) => {
     }
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewReview((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    const { name, value } = e.target;
+
+    // Nếu là trường rating (point), chỉ cho phép số từ 1-5
+    if (name === "rating") {
+      const numValue = parseInt(value);
+      // Chỉ cập nhật nếu giá trị là số hợp lệ từ 1-5 hoặc rỗng
+      if (value === "" || (!isNaN(numValue) && numValue >= 1 && numValue <= 5)) {
+        setNewReview((prev) => ({
+          ...prev,
+          [name]: value === "" ? 0 : numValue
+        }));
+      }
+      // Nếu giá trị không hợp lệ, không cập nhật (giữ nguyên giá trị cũ)
+    } else {
+      setNewReview((prev) => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const columns = [
@@ -100,7 +118,26 @@ const CreateReview = ({ setOpenReview, setComments, userName }: props) => {
   };
 
   const handleConfirm = async () => {
-    console.log(newReview);
+    console.log("[CreateReview] handleConfirm - id:", id, "productId prop:", productId);
+
+    if (!id || id.trim() === "") {
+      alert("Product ID is missing. Please refresh the page and try again.");
+      console.error("[CreateReview] Product ID is missing");
+      return;
+    }
+
+    // Validate rating
+    if (!newReview.rating || newReview.rating < 1 || newReview.rating > 5) {
+      alert("Please enter a valid rating between 1 and 5.");
+      return;
+    }
+
+    // Validate content
+    if (!newReview.comment || newReview.comment.trim() === "") {
+      alert("Please enter a description for your review.");
+      return;
+    }
+
     if (newReview) {
       const data: CreateRatingDTO = {
         productId: id,
@@ -108,6 +145,7 @@ const CreateReview = ({ setOpenReview, setComments, userName }: props) => {
         content: newReview.comment,
         images: selectedFiles
       };
+      console.log("[CreateReview] Sending data:", data);
       const result = await createReview(data);
       if (result) {
         const data: CommentData = {
@@ -175,13 +213,33 @@ const CreateReview = ({ setOpenReview, setComments, userName }: props) => {
           <div className="flex flex-col flex-grow-0 w-[50%] h-full justify-start items-center gap-4">
             <div className="flex flex-col gap-4 items-start justify-start w-full h-fit ">
               <div className="flex flex-row gap-4 w-full h-fit">
-                <InputEdit
-                  titleInput="Point"
-                  name="rating"
-                  onChange={handleChange}
-                  width="w-full"
-                  placeholder="Enter your point..."
-                />
+                <div className="flex flex-col gap-[8px] text-text-dark-500 w-full">
+                  <p className="text-text-dark-400">Point:</p>
+                  <input
+                    type="number"
+                    name="rating"
+                    min="1"
+                    max="5"
+                    step="1"
+                    value={newReview.rating || ""}
+                    onChange={handleChange}
+                    className="h-[34px] border border-border-color rounded-lg px-2 focus:outline-none focus:ring-0"
+                    placeholder="Enter your point (1-5)..."
+                    onKeyDown={(e) => {
+                      // Ngăn chặn nhập ký tự không phải số (trừ phím điều hướng và xóa)
+                      if (
+                        !/[0-9]/.test(e.key) &&
+                        !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"].includes(e.key) &&
+                        !(e.ctrlKey || e.metaKey) // Cho phép Ctrl+C, Ctrl+V, etc.
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                  {newReview.rating && (newReview.rating < 1 || newReview.rating > 5) && (
+                    <p className="text-red-500 text-xs mt-1">Please enter a number between 1 and 5</p>
+                  )}
+                </div>
               </div>
               <div className="flex w-full h-fit">
                 <InputEdit

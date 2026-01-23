@@ -1,45 +1,72 @@
 "use client";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import Image from "next/image";
 import { sidebarLinks } from "@/constants";
 import { usePathname } from "next/navigation";
 import Theme from "../navbar/Theme";
 import { Icon } from "@iconify/react/dist/iconify.js";
+import { SignedIn, useUser } from "@clerk/nextjs";
+import AdminUserButton from "@/components/auth/AdminUserButton";
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const { user, isLoaded } = useUser();
+  const [userName, setUserName] = useState<string>("");
+
+  useEffect(() => {
+    if (!isLoaded || !user) {
+      setUserName("");
+      return;
+    }
+
+    // Ưu tiên lấy từ Clerk user (firstName + lastName)
+    if (user.firstName || user.lastName) {
+      const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+      if (fullName) {
+        setUserName(fullName);
+        return;
+      }
+    }
+
+    // Fallback: Lấy từ localStorage userData (cho customer)
+    try {
+      const userDataStr = localStorage.getItem("userData");
+      if (userDataStr) {
+        const userData = JSON.parse(userDataStr);
+        if (userData.fullName) {
+          setUserName(userData.fullName);
+          return;
+        }
+      }
+    } catch (error) {
+      console.error("[Sidebar] Error parsing userData:", error);
+    }
+
+    // Fallback cuối cùng: dùng email hoặc username
+    if (user.emailAddresses?.[0]?.emailAddress) {
+      setUserName(user.emailAddresses[0].emailAddress.split("@")[0]);
+    } else if (user.username) {
+      setUserName(user.username);
+    } else {
+      setUserName("User");
+    }
+  }, [user, isLoaded]);
 
   return (
     <nav className=" h-screen z-50 w-64 p-6 fixed">
       <div className="flex flex-col items-center gap-4 ">
-        <div className="w-[70px] h-[70px]">
-          <Image
-            src="https://i.pinimg.com/736x/62/67/33/626733cb670aff420e52442cade42e5e.jpg"
-            alt="Avatar"
-            width={80}
-            height={80}
-            priority
-            className="rounded-full object-cover w-full h-full"
-          />
+        <div className="w-[70px] h-[70px] flex items-center justify-center">
+          <SignedIn>
+            <AdminUserButton />
+          </SignedIn>
         </div>
 
         <Link href="/" className="text-dark400_primary100">
-          <p className="hidden md:block text-center">ALPACA</p>
-        </Link>
-      </div>
-
-      <div className="flex items-center justify-center mt-4 gap-5">
-        <Icon
-          icon="ion:search-outline"
-          className="text-2xl mt-2 mr-3 text-dark400_light600"
-        />
-        <Link href="/notification">
-          <Icon
-            icon="pepicons-pencil:bell"
-            className="text-2xl mt-2 text-dark400_light600"
-          />
+          <p className="hidden md:block text-center text-sm font-medium">
+            {userName || "ALPACA"}
+          </p>
         </Link>
       </div>
 
