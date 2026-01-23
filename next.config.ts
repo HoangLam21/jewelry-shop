@@ -9,19 +9,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "i.pinimg.com" },
       { protocol: "https", hostname: "example.com" },
-      { 
-        protocol: "https", 
-        hostname: "res.cloudinary.com",
-        pathname: "/**",
-      },
-      { 
-        protocol: "http", 
-        hostname: "res.cloudinary.com",
-        pathname: "/**",
-      },
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "http", hostname: "res.cloudinary.com" },
     ],
-    // domains is deprecated, using remotePatterns instead
-    unoptimized: false, // Set to true if you want to bypass image optimization
   },
 
   async headers() {
