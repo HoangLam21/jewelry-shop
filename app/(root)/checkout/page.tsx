@@ -336,12 +336,11 @@ export default function Page() {
           </h2>
           <form onSubmit={handleOrder} className="flex flex-col space-y-4">
             <ShippingInfomation
-              city={city}
-              setCity={setCity}
               setAddress={setAddress}
               setPhoneNumber={setPhoneNumber}
               setNote={setNote}
             />
+
             <button
               type="submit"
               className="bg-primary-100 text-white p-3 hover:bg-primary-200 transition-colors font-medium rounded-lg"

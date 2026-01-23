@@ -320,7 +320,7 @@ export default function Page() {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8 mb-10">
-                <Link href="/products" className="w-full sm:w-auto">
+                <Link href="/product" className="w-full sm:w-auto">
                   <Button className="w-full sm:w-auto bg-gray-300 dark:bg-gray-700 text-dark100_light500 hover:bg-gray-400 dark:hover:bg-gray-600 px-8 py-6 rounded-none">
                     CONTINUE SHOPPING
                   </Button>
