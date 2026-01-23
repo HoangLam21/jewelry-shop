@@ -9,7 +9,7 @@ import PaginationUI from "@/types/pagination/Pagination";
 import { Staff } from "@/dto/StaffDTO";
 import { deleteStaff } from "@/lib/service/staff.service";
 import Format from "@/components/shared/card/ConfirmCard";
-
+import { Eye, Pencil, Trash2, Phone } from "lucide-react";
 const columns = [
   { header: "Staff", accessor: "id" },
   {
@@ -209,35 +209,22 @@ const StaffList = ({
       <td className="px-6 py-4">
         <div className="flex items-center gap-2">
           <Link href={`/admin/staff/${item._id}`}>
-            <button className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors group">
-              <Icon
-                icon="solar:eye-linear"
-                width={20}
-                height={20}
-                className="text-blue-600 dark:text-blue-400"
-              />
+            <button className="p-2 rounded-lg hover:bg-blue-50">
+              <Eye size={18} className="text-blue-600" />
             </button>
           </Link>
+
           <Link href={`/admin/staff/edit/${item._id}`}>
-            <button className="p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors group">
-              <Icon
-                icon="solar:pen-linear"
-                width={20}
-                height={20}
-                className="text-green-600 dark:text-green-400"
-              />
+            <button className="p-2 rounded-lg hover:bg-green-50">
+              <Pencil size={18} className="text-green-600" />
             </button>
           </Link>
+
           <button
             onClick={() => setDeleteStaffId(item._id)}
-            className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors group"
+            className="p-2 rounded-lg hover:bg-red-50"
           >
-            <Icon
-              icon="solar:trash-bin-trash-linear"
-              width={20}
-              height={20}
-              className="text-red-600 dark:text-red-400"
-            />
+            <Trash2 size={18} className="text-red-600" />
           </button>
         </div>
       </td>
