@@ -19,6 +19,31 @@ import { CategoryResponse } from "@/dto/CategoryDTO";
 import { ProductResponse } from "@/dto/ProductDTO";
 import { Voucher } from "@/dto/VoucherDTO";
 
+// Skeleton Components
+const SwiperSkeleton = () => (
+  <div className="w-full h-[400px] bg-gray-200 animate-pulse rounded-lg mb-8"></div>
+);
+
+const CategoriesSkeleton = () => (
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    {[...Array(8)].map((_, i) => (
+      <div key={i} className="h-32 bg-gray-200 animate-pulse rounded-lg"></div>
+    ))}
+  </div>
+);
+
+const ProductsSkeleton = () => (
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    {[...Array(8)].map((_, i) => (
+      <div key={i} className="h-64 bg-gray-200 animate-pulse rounded-lg"></div>
+    ))}
+  </div>
+);
+
+const SaleSkeleton = () => (
+  <div className="w-full h-48 bg-gray-200 animate-pulse rounded-lg mb-8"></div>
+);
+
 export default function Page() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
@@ -26,6 +51,13 @@ export default function Page() {
   const [categoriesData, setCategoriesData] = useState<CategoryResponse[]>([]);
   const [vouchersData, setVouchersData] = useState<Voucher[]>([]);
 
+  const [loading, setLoading] = useState({
+    products: true,
+    categories: true,
+    vouchers: true,
+  });
+
+  // Fetch user data
   useEffect(() => {
     // Redirect admin/staff đến /admin CHỈ KHI vừa login (từ sign-in hoặc callback)
     // Không redirect nếu admin navigate từ trang khác đến home
@@ -53,7 +85,6 @@ export default function Page() {
 
   useEffect(() => {
     const fetchAndSaveUser = async () => {
-      // Chỉ fetch nếu user đã đăng nhập
       if (!isLoaded || !user) {
         return;
       }
@@ -89,25 +120,62 @@ export default function Page() {
     fetchAndSaveUser();
   }, [user, isLoaded]);
 
+  // Fetch all data - Optimized with parallel requests
   useEffect(() => {
     let isMounted = true;
-    const getAllProducts = async () => {
+
+    const getAllData = async () => {
       try {
-        const data = await fetchProducts();
-        const categories = await fetchCategory();
-        const vouchers = await fetchVoucher();
-        if (isMounted) {
-          setProductsData(data);
-          console.log(data);
-          setCategoriesData(categories);
-          setVouchersData(vouchers);
-          // console.log(vouchers);
+        // Gọi tất cả API song song
+        const [productsResult, categoriesResult, vouchersResult] =
+          await Promise.allSettled([
+            fetchProducts(),
+            fetchCategory(),
+            fetchVoucher(),
+          ]);
+
+        if (!isMounted) return;
+
+        // Xử lý products
+        if (productsResult.status === "fulfilled") {
+          setProductsData(productsResult.value);
+          console.log("Producttt", productsResult.value);
+          setLoading((prev) => ({ ...prev, products: false }));
+        } else {
+          console.error("Error loading products:", productsResult.reason);
+          setLoading((prev) => ({ ...prev, products: false }));
+        }
+
+        // Xử lý categories
+        if (categoriesResult.status === "fulfilled") {
+          setCategoriesData(categoriesResult.value);
+          setLoading((prev) => ({ ...prev, categories: false }));
+        } else {
+          console.error("Error loading categories:", categoriesResult.reason);
+          setLoading((prev) => ({ ...prev, categories: false }));
+        }
+
+        // Xử lý vouchers
+        if (vouchersResult.status === "fulfilled") {
+          setVouchersData(vouchersResult.value);
+          setLoading((prev) => ({ ...prev, vouchers: false }));
+        } else {
+          console.error("Error loading vouchers:", vouchersResult.reason);
+          setLoading((prev) => ({ ...prev, vouchers: false }));
         }
       } catch (error) {
-        console.error("Error loading posts:", error);
+        console.error("Error loading data:", error);
+        // Set tất cả loading về false nếu có lỗi
+        setLoading({
+          products: false,
+          categories: false,
+          vouchers: false,
+        });
       }
     };
-    getAllProducts();
+
+    getAllData();
+
     return () => {
       isMounted = false;
     };
@@ -116,14 +184,34 @@ export default function Page() {
   return (
     <>
       <div className="px-[2%]">
-        <Swiper productsData={productsData} />
+        {loading.products ? (
+          <SwiperSkeleton />
+        ) : (
+          <Swiper productsData={productsData} />
+        )}
+
         <FeaturesSession />
-        <Categories categoriesData={categoriesData} />
+
+        {loading.categories ? (
+          <CategoriesSkeleton />
+        ) : (
+          <Categories categoriesData={categoriesData} />
+        )}
       </div>
 
-      <Sale vouchersData={vouchersData} />
+      {loading.vouchers ? (
+        <SaleSkeleton />
+      ) : (
+        <Sale vouchersData={vouchersData} />
+      )}
+
       <div className="px-[2%]">
-        <Products productsData={productsData} />
+        {loading.products ? (
+          <ProductsSkeleton />
+        ) : (
+          <Products productsData={productsData} />
+        )}
+
         <Collections />
       </div>
     </>
