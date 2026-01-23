@@ -12,7 +12,8 @@ import UserModal from "@/components/form/user/UserModal";
 import { fetchProducts } from "@/lib/services/product.service";
 import SearchModal from "@/components/form/search/SearchModal";
 
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import SafeUserButton from "@/components/auth/SafeUserButton";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -96,7 +97,7 @@ const Navbar = () => {
         )}
 
         <SignedIn>
-          <UserButton />
+          <SafeUserButton />
         </SignedIn>
         <SignedOut>
           <SignInButton>

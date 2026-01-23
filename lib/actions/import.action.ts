@@ -64,6 +64,29 @@ export const createImport = async (data: {
     // Connect to the database
     await connectToDatabase();
 
+    // Validate required fields
+    if (!data.staff || !data.provider) {
+      throw new Error("Staff ID and Provider ID are required");
+    }
+
+    // Validate ObjectId format
+    const isValidObjectId = (id: string): boolean => {
+      return /^[0-9a-fA-F]{24}$/.test(id);
+    };
+
+    if (!isValidObjectId(data.staff)) {
+      throw new Error(`Invalid staff ID format: ${data.staff}`);
+    }
+
+    if (!isValidObjectId(data.provider)) {
+      throw new Error(`Invalid provider ID format: ${data.provider}`);
+    }
+
+    // Validate details
+    if (!data.details || data.details.length === 0) {
+      throw new Error("Import must have at least one detail item");
+    }
+
     // Calculate total cost
     const totalCost = data.details.reduce((sum, item) => {
       const itemCost = item.unitPrice * item.quantity;
@@ -83,7 +106,11 @@ export const createImport = async (data: {
     return newOrder;
   } catch (error) {
     console.error("Error creating Order: ", error);
-    throw new Error("Failed to create order");
+    // Throw the original error message if it's a validation error
+    if (error instanceof Error && (error.message.includes("Invalid") || error.message.includes("required"))) {
+      throw error;
+    }
+    throw new Error((error instanceof Error ? error.message : "Failed to create order"));
   }
 };
 

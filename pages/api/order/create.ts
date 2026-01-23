@@ -21,6 +21,19 @@ async function handler(
                 data.customer = auth.userIdInDb;
             }
             
+            // Tự động lấy staff ID từ user đang đăng nhập (nếu là staff/admin)
+            if ((auth.role === "staff" || auth.role === "admin") && auth.userIdInDb) {
+                // Nếu user là staff, dùng staff ID của họ
+                // Nếu user là admin, có thể dùng staff ID từ request body hoặc yêu cầu chọn staff
+                if (auth.role === "staff") {
+                    data.staff = auth.userIdInDb;
+                    console.log(`[Order Create] Auto-setting staff ID to authenticated staff: ${auth.userIdInDb}`);
+                } else if (auth.role === "admin" && !data.staff) {
+                    // Admin có thể tạo order cho staff khác, nhưng nếu không có staff ID thì báo lỗi
+                    return res.status(400).json({ error: "Staff ID is required when creating order as admin" });
+                }
+            }
+            
             // Validate required fields
             if (!data.customer || !data.staff) {
                 return res.status(400).json({ error: "Missing required fields: customer and staff" });

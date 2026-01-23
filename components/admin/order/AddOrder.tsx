@@ -47,7 +47,7 @@ const AddOrder = () => {
     shippingMethod: "", // Default to an empty string
     ETD: new Date(), // Default to the current date
     customer: "", // Default to an empty string
-    staff: "6776bdd574de08ccc866a4b8", // Default to an empty string
+    staff: "", // Staff ID sẽ được tự động set bởi API từ user đang đăng nhập
   });
 
   useEffect(() => {
@@ -187,7 +187,7 @@ const AddOrder = () => {
         shippingMethod: item.shippingMethod, // Default to an empty string
         ETD: new Date(), // Default to the current date
         customer: item.customer, // Default to an empty string
-        staff: "6776bdd574de08ccc866a4b8", // Default to an empty string
+        staff: "", // Staff ID sẽ được tự động set bởi API từ user đang đăng nhập
       };
 
       console.log(data);
