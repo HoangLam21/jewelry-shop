@@ -35,13 +35,17 @@ async function handler(
             // Tự động lấy staff ID từ user đang đăng nhập (nếu là staff/admin)
             if ((auth.role === "staff" || auth.role === "admin") && auth.userIdInDb) {
                 // Nếu user là staff, dùng staff ID của họ
-                // Nếu user là admin, có thể dùng staff ID từ request body hoặc yêu cầu chọn staff
+                // Nếu user là admin, có thể dùng staff ID từ request body hoặc để trống (optional)
                 if (auth.role === "staff") {
                     data.staff = auth.userIdInDb;
                     console.log(`[Order Create] Auto-setting staff ID to authenticated staff: ${auth.userIdInDb}`);
-                } else if (auth.role === "admin" && !data.staff) {
-                    // Admin có thể tạo order cho staff khác, nhưng nếu không có staff ID thì báo lỗi
-                    return res.status(400).json({ error: "Staff ID is required when creating order as admin" });
+                } else if (auth.role === "admin") {
+                    // Admin có thể tạo order với staff ID từ request body hoặc để trống
+                    // Nếu staff là empty string, set thành undefined để không validate
+                    if (data.staff === "" || !data.staff) {
+                        data.staff = undefined;
+                        console.log(`[Order Create] Admin creating order without staff assignment`);
+                    }
                 }
             }
 
@@ -50,6 +54,26 @@ async function handler(
                 console.log("[Order Create] Missing or empty customer field after processing. Final value:", data.customer);
                 return res.status(400).json({
                     error: "Missing required field: customer. Please ensure you are logged in and have a valid account."
+                });
+            }
+
+            // Validate ObjectId format for customer
+            const isValidObjectId = (id: string): boolean => {
+                return /^[0-9a-fA-F]{24}$/.test(id);
+            };
+
+            if (!isValidObjectId(data.customer)) {
+                console.log("[Order Create] Invalid customer ID format:", data.customer);
+                return res.status(400).json({
+                    error: `Invalid customer ID format: "${data.customer}". Customer ID must be a valid 24-character MongoDB ObjectId.`
+                });
+            }
+
+            // Validate staff ObjectId format if provided
+            if (data.staff && data.staff !== "" && !isValidObjectId(data.staff)) {
+                console.log("[Order Create] Invalid staff ID format:", data.staff);
+                return res.status(400).json({
+                    error: `Invalid staff ID format: "${data.staff}". Staff ID must be a valid 24-character MongoDB ObjectId.`
                 });
             }
 
@@ -74,10 +98,16 @@ async function handler(
                 return res.status(400).json({ error: "Missing required field: shippingMethod" });
             }
 
-            // Chỉ validate staff nếu không phải customer tự tạo
-            if (auth.role !== "customer" && !data.staff) {
-                console.log("[Order Create] Missing staff field for non-customer");
+            // Chỉ validate staff cho staff role (staff phải có staff ID)
+            // Admin và customer có thể tạo order không có staff
+            if (auth.role === "staff" && !data.staff) {
+                console.log("[Order Create] Missing staff field for staff role");
                 return res.status(400).json({ error: "Missing required field: staff" });
+            }
+
+            // Normalize empty string to undefined
+            if (data.staff === "" || data.staff === null) {
+                data.staff = undefined;
             }
 
             console.log("[Order Create] Calling createOrder with data:", {

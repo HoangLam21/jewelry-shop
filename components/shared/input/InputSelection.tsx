@@ -2,9 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import classNames from "classnames";
 import { Icon } from "@iconify/react";
 
+interface Option {
+  name: string;
+  value: string;
+}
+
 interface InputSelectionProps {
   titleInput: string;
-  options: string[]; // Options for selection
+  options: string[] | Option[]; // Options for selection - can be string array or object array
   width: string;
   value?: string | null; // Current value selected
   onChange?: (value: string) => void; // Callback for handling value change
@@ -51,10 +56,27 @@ const InputSelection: React.FC<InputSelectionProps> = ({
     setShowOptions((prev) => !prev);
   };
 
-  const handleOptionSelect = (option: string) => {
-    setSelectedOption(option);
-    onChange?.(option);
+  // Check if options are objects or strings
+  const isObjectOptions = (opts: string[] | Option[]): opts is Option[] => {
+    return opts.length > 0 && typeof opts[0] === "object" && "name" in opts[0] && "value" in opts[0];
+  };
+
+  const handleOptionSelect = (option: string | Option) => {
+    const selectedValue = typeof option === "string" ? option : option.value;
+    const displayValue = typeof option === "string" ? option : option.name;
+    setSelectedOption(selectedValue);
+    onChange?.(selectedValue);
     setShowOptions(false);
+  };
+
+  // Get display value for selected option
+  const getDisplayValue = (): string => {
+    if (!selectedOption) return "";
+    if (isObjectOptions(options)) {
+      const option = options.find((opt) => opt.value === selectedOption);
+      return option?.name || "";
+    }
+    return selectedOption;
   };
 
   return (
@@ -69,7 +91,7 @@ const InputSelection: React.FC<InputSelectionProps> = ({
         <input
           ref={inputRef}
           type="text"
-          value={selectedOption || ""}
+          value={getDisplayValue()}
           placeholder="Select an option"
           className="h-[34px] w-full border border-gray-300 rounded-lg px-3 bg-white focus:outline-none cursor-pointer"
           onClick={handleDropdownClick}
@@ -90,15 +112,25 @@ const InputSelection: React.FC<InputSelectionProps> = ({
             )}
           >
             <ul>
-              {options.map((option, index) => (
-                <li
-                  key={index}
-                  className="px-6 py-1 text-gray-700 hover:bg-primary-100 hover:text-white rounded-lg cursor-pointer"
-                  onClick={() => handleOptionSelect(option)}
-                >
-                  {option}
-                </li>
-              ))}
+              {isObjectOptions(options)
+                ? options.map((option, index) => (
+                    <li
+                      key={index}
+                      className="px-6 py-1 text-gray-700 hover:bg-primary-100 hover:text-white rounded-lg cursor-pointer"
+                      onClick={() => handleOptionSelect(option)}
+                    >
+                      {option.name}
+                    </li>
+                  ))
+                : options.map((option, index) => (
+                    <li
+                      key={index}
+                      className="px-6 py-1 text-gray-700 hover:bg-primary-100 hover:text-white rounded-lg cursor-pointer"
+                      onClick={() => handleOptionSelect(option)}
+                    >
+                      {option}
+                    </li>
+                  ))}
             </ul>
           </div>
         )}

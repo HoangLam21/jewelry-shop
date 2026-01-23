@@ -73,65 +73,80 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
 
     // Đọc role từ Clerk user metadata trực tiếp (không cần session)
     // Đây là cách nhanh nhất và đáng tin cậy nhất
+    // Wrap toàn bộ trong try-catch để đảm bảo luôn fallback về database nếu Clerk API fail
     let roleFromMetadata: UserRole | undefined = undefined
-    let retryCount = 0
-    const maxRetries = 2
+    let clerkApiFailed = false
 
-    while (retryCount <= maxRetries && !roleFromMetadata) {
-      try {
-        const client = await clerkClient()
-        const user = await client.users.getUser(userId)
+    try {
+      let retryCount = 0
+      const maxRetries = 2
 
-        // Đọc role từ publicMetadata (được set qua syncRoleToClerk)
-        roleFromMetadata = user.publicMetadata?.role as UserRole | undefined
+      while (retryCount <= maxRetries && !roleFromMetadata) {
+        try {
+          const client = await clerkClient()
+          const user = await client.users.getUser(userId)
 
-        console.log(`[API Auth] Role from Clerk user metadata (attempt ${retryCount + 1}): ${roleFromMetadata || 'not found'}`)
+          // Đọc role từ publicMetadata (được set qua syncRoleToClerk)
+          roleFromMetadata = user.publicMetadata?.role as UserRole | undefined
 
-        if (roleFromMetadata && ['customer', 'staff', 'admin'].includes(roleFromMetadata)) {
-          console.log(`[API Auth] Using role from Clerk metadata: ${roleFromMetadata}`)
+          console.log(`[API Auth] Role from Clerk user metadata (attempt ${retryCount + 1}): ${roleFromMetadata || 'not found'}`)
 
-          let userIdInDb: string | undefined
-          if (roleFromMetadata === 'admin') {
-            // Admin không có record trong database, dùng Clerk ID
-            userIdInDb = process.env.ADMIN_CLERK_ID || userId
-          } else {
-            // Với customer/staff, query database để lấy _id
-            // Sử dụng checkUserRole nhưng chỉ để lấy userId, không dùng role từ nó
-            try {
-              const roleResult = await checkUserRole(userId)
-              // Chỉ dùng userId từ kết quả, giữ nguyên role từ metadata
-              userIdInDb = roleResult.userId
-            } catch (dbError) {
-              console.warn('[API Auth] Could not fetch user ID from database:', dbError)
+          if (roleFromMetadata && ['customer', 'staff', 'admin'].includes(roleFromMetadata)) {
+            console.log(`[API Auth] Using role from Clerk metadata: ${roleFromMetadata}`)
+
+            let userIdInDb: string | undefined
+            if (roleFromMetadata === 'admin') {
+              // Admin không có record trong database, dùng Clerk ID
+              userIdInDb = process.env.ADMIN_CLERK_ID || userId
+            } else {
+              // Với customer/staff, query database để lấy _id
+              // Sử dụng checkUserRole nhưng chỉ để lấy userId, không dùng role từ nó
+              try {
+                const roleResult = await checkUserRole(userId)
+                // Chỉ dùng userId từ kết quả, giữ nguyên role từ metadata
+                userIdInDb = roleResult.userId
+              } catch (dbError) {
+                console.warn('[API Auth] Could not fetch user ID from database:', dbError)
+              }
+            }
+
+            return {
+              isAuthenticated: true,
+              userId,
+              role: roleFromMetadata,
+              userIdInDb
             }
           }
-
-          return {
-            isAuthenticated: true,
-            userId,
-            role: roleFromMetadata,
-            userIdInDb
+          break // Nếu đã lấy được user nhưng không có role, không retry nữa
+        } catch (metadataError: any) {
+          retryCount++
+          if (retryCount <= maxRetries) {
+            console.warn(`[API Auth] Could not fetch role from Clerk user metadata (attempt ${retryCount}/${maxRetries}):`, metadataError?.message || metadataError)
+            // Wait 100ms before retry
+            await new Promise(resolve => setTimeout(resolve, 100))
+          } else {
+            console.warn('[API Auth] Could not fetch role from Clerk user metadata after retries:', metadataError)
+            clerkApiFailed = true
+            // Tiếp tục với database fallback
+            break
           }
         }
-        break // Nếu đã lấy được user nhưng không có role, không retry nữa
-      } catch (metadataError: any) {
-        retryCount++
-        if (retryCount <= maxRetries) {
-          console.warn(`[API Auth] Could not fetch role from Clerk user metadata (attempt ${retryCount}/${maxRetries}):`, metadataError?.message || metadataError)
-          // Wait 100ms before retry
-          await new Promise(resolve => setTimeout(resolve, 100))
-        } else {
-          console.warn('[API Auth] Could not fetch role from Clerk user metadata after retries:', metadataError)
-          // Tiếp tục với database fallback
-        }
       }
+    } catch (outerError: any) {
+      // Catch bất kỳ exception nào không được handle trong while loop
+      console.warn('[API Auth] Unexpected error in Clerk API call, falling back to database:', outerError)
+      clerkApiFailed = true
     }
 
     // Fallback: Query database để lấy role
     // (Trường hợp này xảy ra nếu metadata chưa được set hoặc không thể đọc từ Clerk API)
     // QUAN TRỌNG: Vì middleware đã verify role từ JWT token, nếu user đã pass middleware
     // thì có thể trust userId và check admin trước
-    console.log(`[API Auth] No role in Clerk metadata, falling back to database check...`)
+    if (clerkApiFailed || !roleFromMetadata) {
+      console.log(`[API Auth] Clerk API failed or no role found, falling back to database check...`)
+    } else {
+      console.log(`[API Auth] No role in Clerk metadata, falling back to database check...`)
+    }
 
     // Nếu có ADMIN_CLERK_ID và userId khớp, trust là admin (vì middleware đã verify)
     const adminClerkId = process.env.ADMIN_CLERK_ID
@@ -206,25 +221,31 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
     }
 
     // Nếu không tìm thấy trong database, check xem request có đến từ admin route không
-    const referer = req.headers.referer || ''
-    const isFromAdminRoute = referer.includes('/admin/')
+    // Wrap trong try-catch để đảm bảo không bị dừng nếu có lỗi
+    try {
+      const referer = req.headers.referer || ''
+      const isFromAdminRoute = referer.includes('/admin/')
 
-    if (isFromAdminRoute) {
-      // Request đến từ admin route → middleware đã verify role "admin"
-      console.log(`[API Auth] User ${userId} not found in database, but request from admin route (middleware verified) - trusting as admin`)
-      return {
-        isAuthenticated: true,
-        userId,
-        role: 'admin', // Trust middleware verification
-        userIdInDb: process.env.ADMIN_CLERK_ID || userId
+      if (isFromAdminRoute) {
+        // Request đến từ admin route → middleware đã verify role "admin"
+        console.log(`[API Auth] User ${userId} not found in database, but request from admin route (middleware verified) - trusting as admin`)
+        return {
+          isAuthenticated: true,
+          userId,
+          role: 'admin', // Trust middleware verification
+          userIdInDb: process.env.ADMIN_CLERK_ID || userId
+        }
       }
+    } catch (refererError) {
+      console.warn('[API Auth] Error checking referer:', refererError)
     }
 
     // Nếu không phải từ admin route và không tìm thấy trong database
     console.log(`[API Auth] User ${userId} not found in database and not from admin route`)
     return null
   } catch (error) {
-    console.error('[API Auth] Error getting auth user:', error)
+    // Catch bất kỳ exception nào không được handle ở trên
+    console.error('[API Auth] Unexpected error in getAuthUser, returning null:', error)
     return null
   }
 }
