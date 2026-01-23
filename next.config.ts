@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   // ✅ Cho phép load ảnh từ các domain ngoài (Cloudinary, Pinterest, v.v.)
   images: {
     remotePatterns: [
-      // Cloudinary (dùng cả http và https để tránh lỗi khi chạy local)
+      // Cloudinary (https + http để tránh lỗi khi chạy local)
       {
         protocol: "https",
         hostname: "res.cloudinary.com",

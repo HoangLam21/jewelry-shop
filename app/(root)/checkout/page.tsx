@@ -337,12 +337,12 @@ export default function Page() {
           </h2>
           <form onSubmit={handleOrder} className="flex flex-col space-y-4">
             <ShippingInfomation
-              city={city}
-              setCity={setCity}
               setAddress={setAddress}
               setPhoneNumber={setPhoneNumber}
               setNote={setNote}
+              setCity={setCity}
             />
+
             <button
               type="submit"
               className="bg-primary-100 text-white p-3 hover:bg-primary-200 transition-colors font-medium rounded-lg"
@@ -487,10 +487,11 @@ export default function Page() {
                     <span>Fast Delivery (+5k shipping fee)</span>
                   </label>
                   <label
-                    className={`flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg ${city.toLowerCase() === "ho chi minh"
-                      ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-300"
-                      : "opacity-50 cursor-not-allowed"
-                      }`}
+                    className={`flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg ${
+                      city.toLowerCase() === "ho chi minh"
+                        ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-300"
+                        : "opacity-50 cursor-not-allowed"
+                    }`}
                   >
                     <input
                       type="radio"

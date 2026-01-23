@@ -20,6 +20,7 @@ import AddDetailProduct from "./AddDetailProduct";
 import { createOrder } from "@/lib/service/order.service";
 import { fetchVoucher } from "@/lib/service/voucher.service";
 import InputNumberSelection from "@/components/shared/input/InputNumberSelection";
+import { fetchCustomer } from "@/lib/service/customer.service";
 
 const AddOrder = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -28,6 +29,9 @@ const AddOrder = () => {
   const [isProductOverlayOpen, setIsProductOverlayOpen] = useState(false);
   const [voucherList, setVoucherList] = useState<
     { name: string; discount: number }[]
+  >([]);
+  const [customerList, setCustomerList] = useState<
+    { id: string; name: string }[]
   >([]);
 
   const [productDetail, setProductDetail] = useState({
@@ -99,8 +103,26 @@ const AddOrder = () => {
       }
     };
 
+    const fetchDataCustomer = async () => {
+      try {
+        const result = await fetchCustomer();
+        if (result && Array.isArray(result)) {
+          const formattedCustomers = result.map((customer: any) => ({
+            id: customer._id,
+            name: `${customer.fullName} (${customer.email})`,
+          }));
+          setCustomerList(formattedCustomers);
+        }
+      } catch (err: any) {
+        console.error("Error fetching customers:", err);
+        const errorMessage = err?.message || "An unexpected error occurred.";
+        alert(`Error fetching customers: ${errorMessage}`);
+      }
+    };
+
     fetchData();
     fetchDataVoucher();
+    fetchDataCustomer();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,20 +242,27 @@ const AddOrder = () => {
               content={`${format(new Date(), "PPP")}`}
             />
             <LabelInformation title="Status" content={item.status} />
-            <LabelInformation title="Staff id" content={item.staff} />
+            <LabelInformation title="Staff id" content={item.staff || "N/A"} />
           </div>
         </div>
 
         {/* Supplier Information */}
         <TitleSession title="Supplier Information" />
         <div className="grid grid-cols-2 gap-x-10 gap-y-4">
-          <InputEdit
-            titleInput="CustomerId"
+          <InputSelection
             width="w-full"
-            name="customer"
-            onChange={handleChange}
-            placeholder="Enter CustomerId"
+            titleInput="Customer"
+            options={customerList.map((customer) => ({
+              name: customer.name,
+              value: customer.id,
+            }))}
             value={item?.customer ?? ""}
+            onChange={(value) => {
+              setItem((prev) => ({
+                ...prev!,
+                customer: value,
+              }));
+            }}
           />
 
           <InputSelection
