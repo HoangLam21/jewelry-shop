@@ -11,6 +11,7 @@ import MobileNav from "./MobileNav";
 import UserModal from "@/components/form/user/UserModal";
 import { fetchProducts } from "@/lib/services/product.service";
 import SearchModal from "@/components/form/search/SearchModal";
+import { ShoppingCart, Search, User } from "lucide-react";
 
 import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import SafeUserButton from "@/components/auth/SafeUserButton";
@@ -21,6 +22,7 @@ const Navbar = () => {
   const [productsData, setProductsData] = useState<any[]>([]);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+
   useEffect(() => {
     const userData = localStorage.getItem("userData");
     if (userData) {
@@ -32,6 +34,7 @@ const Navbar = () => {
       }
     }
   }, []);
+
   useEffect(() => {
     let isMounted = true;
     const getAllProducts = async () => {
@@ -49,8 +52,9 @@ const Navbar = () => {
       isMounted = false;
     };
   }, []);
+
   return (
-    <nav className="flex-between background-light700_dark300 fixed z-50 h-[79px] w-full gap-5 border-b p-6 dark:border-transparent sm:px-5 ">
+    <nav className="flex-between background-light700_dark300 fixed z-50 h-[79px] w-full gap-5 border-b p-6 dark:border-transparent sm:px-5">
       <Link href="/" className="flex items-center gap-1 pl-5">
         <p className="text-dark100_light500 text-3xl jost">JewelryStore</p>
         <p className="text-primary-100 text-3xl">.</p>
@@ -71,7 +75,6 @@ const Navbar = () => {
                       : "text-dark100_light500"
                   } text-[13px] w-[120px] font-medium flex h-[40px] items-center justify-center gap-4 bg-transparent p-4`}
                 >
-                  {/* <Icon className="text-2xl text-light-500" icon={item.icon} /> */}
                   <p className={`${isActive ? "font-medium" : ""}`}>
                     {item.label}
                   </p>
@@ -82,13 +85,18 @@ const Navbar = () => {
         </Sheet>
       </div>
 
-      <div className="flex-between w-auto pr-5">
+      <div className="flex-between w-auto pr-5 gap-4">
         <Theme />
-        <Icon
-          icon="cuida:search-outline"
+
+        {/* Search Icon - Lucide */}
+        <button
           onClick={() => setIsSearchModalOpen(true)}
-          className="text-dark100_light500 mr-5 font-bold text-[20px]"
-        />
+          className="cursor-pointer"
+          aria-label="Search"
+        >
+          <Search className="w-5 h-5 text-dark100_light500 hover:text-primary-100 transition-colors" />
+        </button>
+
         {isSearchModalOpen && (
           <SearchModal
             onClose={() => setIsSearchModalOpen(false)}
@@ -96,31 +104,41 @@ const Navbar = () => {
           />
         )}
 
+        {/* Auth Buttons */}
         <SignedIn>
           <SafeUserButton />
         </SignedIn>
         <SignedOut>
           <SignInButton>
-            <div className="text-dark100_light500 mr-5 text-[16px] font-medium cursor-pointer">
+            <div className="text-dark100_light500 text-[16px] font-medium cursor-pointer hover:text-primary-100 transition-colors">
               Login
             </div>
           </SignInButton>
         </SignedOut>
 
-        <Icon
-          icon="solar:user-bold"
-          className="text-dark100_light500 mr-5 text-[20px]"
+        {/* User Icon - Lucide */}
+        {/* <button
           onClick={() => setIsUserModalOpen(true)}
-        />
+          className="cursor-pointer"
+          aria-label="User menu"
+        >
+          <User className="w-5 h-5 text-dark100_light500 hover:text-primary-100 transition-colors" />
+        </button>
+
         <UserModal
           isOpen={isUserModalOpen}
           onClose={() => setIsUserModalOpen(false)}
-        />
+        /> */}
 
-        <Link href="/cart">
-          <Icon icon="mdi:cart" className="text-dark100_light500 text-[20px]" />
+        {/* Cart Icon - Lucide */}
+        <Link
+          href="/cart"
+          className="cursor-pointer relative"
+          aria-label="Shopping cart"
+        >
+          <ShoppingCart className="w-5 h-5 text-dark100_light500 hover:text-primary-100 transition-colors" />
         </Link>
-
+        {/* Mobile Menu */}
         <div className="flex w-auto sm:hidden">
           <MobileNav />
         </div>
