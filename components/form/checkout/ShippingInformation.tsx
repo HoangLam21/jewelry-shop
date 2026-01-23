@@ -26,11 +26,17 @@ type Props = {
   setAddress: (value: string) => void;
   setPhoneNumber: (value: string) => void;
   setNote: (value: string) => void;
+  setCity: (value: string) => void;
 };
 
 /* ================= COMPONENT ================= */
 
-const ShippingInfomation = ({ setAddress, setPhoneNumber, setNote }: Props) => {
+const ShippingInfomation = ({
+  setAddress,
+  setPhoneNumber,
+  setNote,
+  setCity,
+}: Props) => {
   /* ===== DATA ===== */
   const provinces = provincesData as Province[];
 
@@ -87,9 +93,16 @@ const ShippingInfomation = ({ setAddress, setPhoneNumber, setNote }: Props) => {
         className="w-full p-3 border bg-transparent mb-5"
         value={provinceCode ?? ""}
         onChange={(e) => {
-          setProvinceCode(Number(e.target.value));
+          const code = Number(e.target.value);
+          const province = provinces.find((p) => p.code === code);
+
+          setProvinceCode(code);
           setDistrictCode(null);
           setWardCode(null);
+
+          if (province) {
+            setCity(province.name); // 🔥 SET CITY HERE
+          }
         }}
       >
         <option value="" disabled>

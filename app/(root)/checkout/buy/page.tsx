@@ -207,11 +207,10 @@ export default function Page() {
           </h2>
           <div className="flex flex-col space-y-4">
             <ShippingInformation
-              city={city}
-              setCity={setCity}
               setAddress={setAddress}
               setPhoneNumber={setPhoneNumber}
               setNote={setNote}
+              setCity={setCity}
             />
             <button
               onClick={handleOrder}
@@ -357,10 +356,11 @@ export default function Page() {
                     <span>Fast Delivery (+5k shipping fee)</span>
                   </label>
                   <label
-                    className={`flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg ${city.toLowerCase() === "ho chi minh"
-                      ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-300"
-                      : "opacity-50 cursor-not-allowed"
-                      }`}
+                    className={`flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg ${
+                      city.toLowerCase() === "ho chi minh"
+                        ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-300"
+                        : "opacity-50 cursor-not-allowed"
+                    }`}
                   >
                     <input
                       type="radio"
