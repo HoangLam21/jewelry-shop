@@ -190,8 +190,8 @@ const Page = () => {
                   <span
                     key={i}
                     className={`text-xl ${i < Math.floor(ratingStats.averageRating)
-                        ? "text-yellow-400"
-                        : "text-gray-300"
+                      ? "text-yellow-400"
+                      : "text-gray-300"
                       }`}
                   >
                     ★
@@ -300,8 +300,8 @@ const Page = () => {
                   <button
                     key={variant.material}
                     className={`px-5 py-2.5 rounded-lg font-medium transition-all ${selectedMaterial === variant.material
-                        ? "bg-primary-100 text-white shadow-lg scale-105"
-                        : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
+                      ? "bg-primary-100 text-white shadow-lg scale-105"
+                      : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
                       }`}
                     onClick={() => {
                       setSelectedMaterial(variant.material);
@@ -325,8 +325,8 @@ const Page = () => {
                       <button
                         key={size._id}
                         className={`px-5 py-2.5 rounded-lg font-medium transition-all ${selectedSize === size.size
-                            ? "bg-primary-100 text-white shadow-lg scale-105"
-                            : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
+                          ? "bg-primary-100 text-white shadow-lg scale-105"
+                          : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
                           }`}
                         onClick={() => setSelectedSize(size.size)}
                       >
@@ -386,8 +386,8 @@ const Page = () => {
                   <button
                     key={variant.material}
                     className={`px-5 py-2.5 rounded-lg font-medium transition-all ${selectedMaterial === variant.material
-                        ? "bg-primary-100 text-white shadow-lg scale-105"
-                        : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
+                      ? "bg-primary-100 text-white shadow-lg scale-105"
+                      : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
                       }`}
                     onClick={() => {
                       setSelectedMaterial(variant.material);
@@ -412,8 +412,8 @@ const Page = () => {
                         <button
                           key={size._id}
                           className={`px-5 py-2.5 rounded-lg font-medium transition-all ${selectedSize === size.size
-                              ? "bg-primary-100 text-white shadow-lg scale-105"
-                              : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
+                            ? "bg-primary-100 text-white shadow-lg scale-105"
+                            : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
                             }`}
                           onClick={() => setSelectedSize(size.size)}
                         >
