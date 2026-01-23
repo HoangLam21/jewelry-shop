@@ -5,14 +5,36 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ["@clerk/nextjs"],
   },
 
+  // ✅ Cho phép load ảnh từ các domain ngoài (Cloudinary, Pinterest, v.v.)
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "i.pinimg.com" },
-      { protocol: "https", hostname: "example.com" },
-      { protocol: "https", hostname: "res.cloudinary.com" },
+      // Cloudinary (dùng cả http và https để tránh lỗi khi chạy local)
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+      // Pinterest
+      {
+        protocol: "https",
+        hostname: "i.pinimg.com",
+        pathname: "/**",
+      },
+      // Example domain (nếu có)
+      {
+        protocol: "https",
+        hostname: "example.com",
+        pathname: "/**",
+      },
     ],
   },
 
+  // ✅ Cấu hình header cho Clerk và CSP
   async headers() {
     const clerkProxy = "https://clerk.trangsucdaquy.shop";
 
