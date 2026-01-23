@@ -1,23 +1,41 @@
-import { CreateOrder, Order, UpdateStatusOrder } from "@/dto/OrderDTO";
+import { CreateOrder, Order } from "@/dto/OrderDTO";
 
-export async function fetchOrder(): Promise<[]> {
+// Cache configuration
+const CACHE_DURATION = 30000; // 30 seconds
+let ordersCache: any = null;
+let ordersCacheTime: number = 0;
+
+export async function fetchOrder(): Promise<any[]> {
   try {
-    const response = await fetch(`/api/order/all`);
-    if (!response.ok) {
-      throw new Error("Error fetching posts");
+    // Check cache
+    const now = Date.now();
+    if (ordersCache && now - ordersCacheTime < CACHE_DURATION) {
+      return ordersCache;
     }
+
+    const response = await fetch(`/api/order/all`, {
+      next: { revalidate: 30 },
+    });
+
+    if (!response.ok) {
+      throw new Error("Error fetching orders");
+    }
+
     const data = await response.json();
-    // console.log(data);
+
+    // Update cache
+    ordersCache = data;
+    ordersCacheTime = now;
+
     return data;
   } catch (error) {
-    console.error("Failed to fetch posts:", error);
+    console.error("Failed to fetch orders:", error);
     throw error;
   }
 }
 
 export async function deleteOrder(orderId: string) {
   try {
-    console.log(`/api/order/delete?id=${orderId}`, "delete ");
     const response = await fetch(`/api/order/delete?id=${orderId}`, {
       method: "DELETE",
       headers: {
@@ -30,6 +48,9 @@ export async function deleteOrder(orderId: string) {
       throw new Error(errorData.message || "Error deleting order");
     }
 
+    // Invalidate cache
+    ordersCache = null;
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -40,9 +61,6 @@ export async function deleteOrder(orderId: string) {
 
 export async function createOrder(params: CreateOrder): Promise<Order> {
   try {
-    console.log(params, "update params");
-
-    // Validate and prepare details array
     const details = params.details.map((detail) => ({
       id: detail.id,
       material: detail.material,
@@ -52,10 +70,8 @@ export async function createOrder(params: CreateOrder): Promise<Order> {
       discount: detail.discount,
     }));
 
-    // Convert `ETD` to ISO string format
     const ETD = new Date(params.ETD).toISOString();
 
-    // Prepare the body in JSON format
     const body = JSON.stringify({
       cost: params.cost,
       discount: params.discount,
@@ -67,8 +83,6 @@ export async function createOrder(params: CreateOrder): Promise<Order> {
       staff: params.staff,
     });
 
-    console.log(body, "Prepared request body");
-
     const response = await fetch(`/api/order/create`, {
       method: "POST",
       headers: {
@@ -79,30 +93,34 @@ export async function createOrder(params: CreateOrder): Promise<Order> {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || "Error creating product");
+      throw new Error(errorData.message || "Error creating order");
     }
+
+    // Invalidate cache
+    ordersCache = null;
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Failed to create product:", error);
+    console.error("Failed to create order:", error);
     throw error;
   }
 }
 
 export async function getOrderById(orderId: string): Promise<Order | null> {
   try {
-    console.log(`/api/order/id/${orderId}`, "this is order ");
-    const response = await fetch(`/api/order/id?id=${orderId}`);
+    const response = await fetch(`/api/order/id?id=${orderId}`, {
+      next: { revalidate: 60 },
+    });
 
     if (!response.ok) {
-      throw new Error("Không thể lấy thông tin order.");
+      throw new Error("Unable to fetch order details.");
     }
 
     const data: Order = await response.json();
     return data;
   } catch (error) {
-    console.error("Lỗi khi lấy thông tin order:", error);
+    console.error("Error fetching order:", error);
     throw error;
   }
 }
@@ -110,28 +128,28 @@ export async function getOrderById(orderId: string): Promise<Order | null> {
 export async function updatedStatusOrder(
   orderId: string,
   status: string
-  // token: string
 ): Promise<Order> {
   try {
-    console.log(orderId, status, "param");
     const response = await fetch(`/api/order/update?id=${orderId}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        // Authorization: `${token}`,
       },
       body: JSON.stringify({ status }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || "Error creating media");
+      throw new Error(errorData.message || "Error updating order status");
     }
+
+    // Invalidate cache
+    ordersCache = null;
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error("Failed to create media:", error);
+    console.error("Failed to update order status:", error);
     throw error;
   }
 }

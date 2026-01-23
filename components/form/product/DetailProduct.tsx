@@ -1,36 +1,3 @@
-// import PagingBar from "@/components/shared/bar/PagingBar";
-// import React, { useState } from "react";
-// import Description from "./Description";
-// import AdditionalInformation from "./AdditonalInformation";
-// import Reviews from "./Reviews";
-// import { ProductData } from "@/components/admin/product/ProductList";
-// import { ProductResponse } from "@/dto/ProductDTO";
-
-// const DetailProduct = ({ item }: { item: ProductResponse }) => {
-//   const [activeTitle, setActiveTitle] = useState("DESCRIPTION"); // Track the active title
-//   //const title = ["DESCRIPTION", "ADDITIONAL INFORMATION", "REVIEWS"];
-//   const title = ["DESCRIPTION", "REVIEWS"];
-
-//   const handleTitleClick = (selectedTitle: string) => {
-//     setActiveTitle(selectedTitle);
-//     console.log(`Selected Title: ${selectedTitle}`);
-//   };
-//   return (
-//     <div className="w-full h-full flex flex-col">
-//       <div className="w-full h-full flex flex-col items-center border-b border-border-color ">
-//         <PagingBar title={title} event={handleTitleClick} />
-//       </div>
-//       {activeTitle === "DESCRIPTION" && (
-//         <Description description={item.description} />
-//       )}
-//       {/* {activeTitle === "ADDITIONAL INFORMATION" && <AdditionalInformation />} */}
-//       {activeTitle === "REVIEWS" && <Reviews />}
-//     </div>
-//   );
-// };
-
-// export default DetailProduct;
-
 import PagingBar from "@/components/shared/bar/PagingBar";
 import React, { useState } from "react";
 import Description from "./Description";
@@ -61,7 +28,7 @@ const DetailProduct: React.FC<DetailProductProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col bg-white dark:bg-dark-300 rounded-lg shadow-sm">
+    <div className="w-full flex flex-col bg-white dark:bg-dark-300 rounded-lg shadow-sm mt-10">
       {/* Header với Rating Summary */}
       <div className="w-full border-b border-gray-200 dark:border-gray-700">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 gap-4">

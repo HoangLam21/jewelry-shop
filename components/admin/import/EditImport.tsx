@@ -1,8 +1,6 @@
-import TitleSession from "@/components/shared/label/TitleSession";
 import React, { useState, useMemo } from "react";
 import { format } from "date-fns";
 import InputEdit from "@/components/shared/input/InputEdit";
-import LabelInformation from "@/components/shared/label/LabelInformation";
 import ImportCard from "@/components/shared/card/ImportCard";
 import { formatPrice } from "@/lib/utils";
 import ImportOrderCard from "@/components/shared/card/ImportOrderCard";
@@ -13,7 +11,14 @@ import { useParams } from "next/navigation";
 import { ImportData, ProductsData } from "@/constants/data";
 import { Variant } from "@/components/admin/product/ProductList";
 import { FileContent } from "@/dto/ProductDTO";
-
+import {
+  Package,
+  Calendar,
+  User,
+  ShoppingCart,
+  FileText,
+  Save,
+} from "lucide-react";
 interface Invoice {
   id: string;
   productName: string;
@@ -62,8 +67,6 @@ interface DetailImportProduct {
   quantity: number;
   discount: string;
 }
-
-const stockInfTitle = "font-medium text-[16px] ";
 
 const EditImport = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -118,12 +121,13 @@ const EditImport = () => {
     // Check if product has variants
     if (product.variants && product.variants.length > 0) {
       const firstVariant = product.variants[0];
-      
+
       // Get first size from sizes array if available
-      const firstSize = firstVariant.sizes && firstVariant.sizes.length > 0 
-        ? String(firstVariant.sizes[0]) 
-        : "Default";
-      
+      const firstSize =
+        firstVariant.sizes && firstVariant.sizes.length > 0
+          ? String(firstVariant.sizes[0])
+          : "Default";
+
       const newCartItem: DetailImportProduct = {
         id: product.id,
         material: firstVariant.material || "Default",
@@ -219,50 +223,96 @@ const EditImport = () => {
   const totalDiscount = useMemo(() => {
     return cartItems.reduce((total, item) => {
       const discountPercent = parseFloat(item.discount.replace("%", "")) || 0;
-      return (
-        total + (item.unitPrice * item.quantity * discountPercent) / 100
-      );
+      return total + (item.unitPrice * item.quantity * discountPercent) / 100;
     }, 0);
   }, [cartItems]);
 
   if (!editableItem) {
     return (
-      <div className="flex w-full h-full items-center justify-center bg-white">
-        <div className="loader"></div>
+      <div className="flex w-full h-full items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-amber-600"></div>
+          <p className="text-gray-500 dark:text-gray-400">Loading import...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full rounded-md shadow-md">
-      <div className="p-4 flex flex-col gap-4">
-        {/* Import Information */}
-        <div className="w-full flex gap-20 items-center">
-          <div className="rounded-lg w-28 h-20 flex items-center justify-center border">
-            <p>NH {editableItem.id}</p>
+    <div className="w-full p-6 space-y-6">
+      {/* Import Overview */}
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-6 border border-amber-200 dark:border-amber-800">
+        <div className="flex items-start gap-6">
+          <div className="p-4 bg-white dark:bg-gray-800 rounded-xl border-2 border-amber-300 dark:border-amber-700 shadow-sm">
+            <div className="text-center">
+              <Package className="w-8 h-8 text-amber-600 dark:text-amber-400 mx-auto mb-2" />
+              <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                Import
+              </p>
+              <p className="font-bold text-gray-900 dark:text-white">
+                NH {editableItem.id}
+              </p>
+            </div>
           </div>
-          <div className="flex-1 grid grid-cols-1 gap-2">
-            <LabelInformation
-              title="Create At"
-              content={`${format(editableItem.createAt, "PPP")}`}
-            />
-            <LabelInformation
-              title="Status"
-              content={editableItem.status ? "Done" : "Pending"}
-            />
-            <LabelInformation title="Staff id" content={editableItem.createBy} />
+
+          <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <Calendar className="w-4 h-4" />
+                <span className="text-sm font-medium">Created Date</span>
+              </div>
+              <p className="text-gray-900 dark:text-white font-semibold">
+                {format(editableItem.createAt, "MMM dd, yyyy")}
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <FileText className="w-4 h-4" />
+                <span className="text-sm font-medium">Status</span>
+              </div>
+              <span
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold ${
+                  editableItem.status
+                    ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                    : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
+                }`}
+              >
+                {editableItem.status ? "Delivered" : "Pending"}
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                <User className="w-4 h-4" />
+                <span className="text-sm font-medium">Staff ID</span>
+              </div>
+              <p className="text-gray-900 dark:text-white font-semibold">
+                {editableItem.createBy}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Supplier Information */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2">
+            <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Supplier Information
+            </h3>
           </div>
         </div>
 
-        {/* Supplier Information */}
-        <TitleSession title="Supplier Information" />
-        <div className="grid grid-cols-1 gap-2">
+        <div className="p-6 space-y-4">
           <InputEdit
-            titleInput="Name"
+            titleInput="Supplier Name"
             value={editableItem.suplier.fullname}
             onChange={(e) => changeSuplierField("fullname", e.target.value)}
             width="w-full"
-            placeholder="Enter suplier name..."
+            placeholder="Enter supplier name..."
           />
           <PhoneNumberInput item={editableItem} setItem={setEditableItem} />
           <InputEdit
@@ -270,89 +320,127 @@ const EditImport = () => {
             value={editableItem.suplier.address}
             onChange={(e) => changeSuplierField("address", e.target.value)}
             width="w-full"
-            placeholder="Enter suplier address..."
+            placeholder="Enter supplier address..."
           />
         </div>
+      </div>
 
-        {/* Invoice Detail */}
-        <TitleSession title="Detail Product" />
-        <div className="w-full md:w-2/3 lg:w-[250px]">
-          <TableSearchNoFilter onSearch={setSearchQuery} />
+      {/* Products Section */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Products
+              </h3>
+            </div>
+            <div className="w-full max-w-xs">
+              <TableSearchNoFilter onSearch={setSearchQuery} />
+            </div>
+          </div>
         </div>
 
-        <div className="w-full h-4/6 flex overflow-hidden">
-          <div className="container grid md:grid-cols-3 lg:grid-cols-5 grid-cols-1 w-full gap-8 max-h-[400px] md:w-2/3 lg:w-3/4 overflow-y-auto">
-            {filterData.map((product) => (
-              <ImportCard
-                key={product.id}
-                item={product}
-                onClick={() => addToCart(product)}
-              />
-            ))}
-          </div>
-
-          {/* Cart Section */}
-          <div className="flex flex-col md:w-2/5 w-2/3 lg:w-2/5 max-h-[400px]">
-            {cartItems.length > 0 ? (
-              <div className="container w-full flex flex-col overflow-y-auto rounded-lg p-4 pt-2">
-                <h4 className="text-[18px] font-semibold">In cart:</h4>
-                <hr className="my-2" />
-                <div>
-                  {cartItems.map((cartItem) => {
-                    const product = filterData.find((p) => p.id === cartItem.id);
-                    return (
-                      <div
-                        key={`${cartItem.id}-${cartItem.material}-${cartItem.size}`}
-                        className="flex flex-col gap-4"
-                      >
-                        <ImportOrderCard
-                          cartItem={cartItem}
-                          updateCart={updateCart}
-                          setItem={setEditableItem}
-                          item={product || null}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <hr className="my-2" />
-
-                {/* Cart summary section */}
-                <div className="w-full flex flex-col gap-4 p-2">
-                  <div className="flex justify-between">
-                    <span className={stockInfTitle}>Sub total:</span>
-                    <div>{formatPrice(totalAmount)}</div>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className={stockInfTitle}>Discount:</span>
-                    <div>{formatPrice(totalDiscount)}</div>
-                  </div>
-                  <hr className="my-2" />
-                  <div className="flex justify-between">
-                    <span className="font-bold text-[16px]">Total:</span>
-                    <div className="font-bold">
-                      {formatPrice(totalAmount - totalDiscount)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col justify-start items-center font-medium text-[16px]">
-                Your cart is empty.
-                <div className="w-52 h-52">
-                  <Image
-                    src={"/assets/images/EmptyCart.jpg"}
-                    alt="empty cart"
-                    width={200}
-                    height={230}
-                    className="w-full h-full object-cover"
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Product Grid */}
+            <div className="lg:col-span-2">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto p-2">
+                {filterData.map((product) => (
+                  <ImportCard
+                    key={product.id}
+                    item={product}
+                    onClick={() => addToCart(product)}
                   />
-                </div>
+                ))}
               </div>
-            )}
+            </div>
+
+            {/* Cart */}
+            <div className="lg:col-span-1">
+              <div className="bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700 p-4 max-h-[500px] flex flex-col">
+                <div className="flex items-center gap-2 mb-4">
+                  <ShoppingCart className="w-5 h-5 text-purple-600" />
+                  <h4 className="font-semibold text-gray-900 dark:text-white">
+                    Cart ({cartItems.length})
+                  </h4>
+                </div>
+
+                {cartItems.length > 0 ? (
+                  <>
+                    <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+                      {cartItems.map((cartItem) => {
+                        const product = filterData.find(
+                          (p) => p.id === cartItem.id
+                        );
+                        return (
+                          <ImportOrderCard
+                            key={`${cartItem.id}-${cartItem.material}-${cartItem.size}`}
+                            cartItem={cartItem}
+                            updateCart={updateCart}
+                            setItem={setEditableItem}
+                            item={product || null}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Subtotal:
+                        </span>
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {formatPrice(totalAmount)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Discount:
+                        </span>
+                        <span className="font-medium text-red-600 dark:text-red-400">
+                          -{formatPrice(totalDiscount)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-lg font-bold border-t border-gray-200 dark:border-gray-700 pt-3">
+                        <span className="text-gray-900 dark:text-white">
+                          Total:
+                        </span>
+                        <span className="text-purple-600 dark:text-purple-400">
+                          {formatPrice(totalAmount - totalDiscount)}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center">
+                    <Image
+                      src="/assets/images/EmptyCart.jpg"
+                      alt="empty cart"
+                      width={150}
+                      height={150}
+                      className="opacity-50 mb-4"
+                    />
+                    <p className="text-gray-500 dark:text-gray-400">
+                      Your cart is empty
+                    </p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                      Click on products to add
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all">
+          <Save className="w-4 h-4" />
+          Save Changes
+        </button>
       </div>
     </div>
   );
