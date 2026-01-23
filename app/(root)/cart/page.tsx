@@ -162,8 +162,8 @@ export default function Page() {
   const calculateItemDiscount = (item: CartItem): number => {
     const maxDiscount = item.vouchers.length
       ? Math.max(
-          ...item.vouchers.map((voucher: Voucher) => voucher.discount || 0)
-        )
+        ...item.vouchers.map((voucher: Voucher) => voucher.discount || 0)
+      )
       : 0;
     const selectedVariant = item.variants.find(
       (variant: Variant) => variant.material === item.selectedMaterial
@@ -250,7 +250,7 @@ export default function Page() {
           {cart.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-xl text-gray-500">Your cart is empty</p>
-              <Link href="/products">
+              <Link href="/product">
                 <Button className="mt-4 bg-primary-100 text-white hover:bg-primary-200">
                   Continue Shopping
                 </Button>

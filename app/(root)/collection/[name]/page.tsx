@@ -135,7 +135,7 @@ const Page = () => {
             <p className="text-xl text-gray-500">
               No products found in this collection
             </p>
-            <Link href="/products">
+            <Link href="/product">
               <button className="mt-4 px-6 py-3 bg-primary-100 text-white rounded-lg hover:bg-primary-200 transition-colors">
                 Browse All Products
               </button>
@@ -153,11 +153,10 @@ const Page = () => {
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-2 mt-10">
             <button
-              className={`px-4 py-2 rounded-lg transition-all ${
-                currentPage === 1
+              className={`px-4 py-2 rounded-lg transition-all ${currentPage === 1
                   ? "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
                   : "bg-gray-200 dark:bg-gray-700 text-dark100_light500 hover:bg-primary-100 hover:text-white"
-              }`}
+                }`}
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
@@ -175,11 +174,10 @@ const Page = () => {
                 return (
                   <button
                     key={index}
-                    className={`px-4 py-2 rounded-lg transition-all ${
-                      currentPage === pageNumber
+                    className={`px-4 py-2 rounded-lg transition-all ${currentPage === pageNumber
                         ? "bg-primary-100 text-white shadow-lg"
                         : "bg-gray-200 dark:bg-gray-700 text-dark100_light500 hover:bg-primary-100 hover:text-white"
-                    }`}
+                      }`}
                     onClick={() => handlePageChange(pageNumber)}
                   >
                     {pageNumber}
@@ -199,11 +197,10 @@ const Page = () => {
             })}
 
             <button
-              className={`px-4 py-2 rounded-lg transition-all ${
-                currentPage === totalPages
+              className={`px-4 py-2 rounded-lg transition-all ${currentPage === totalPages
                   ? "bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed"
                   : "bg-gray-200 dark:bg-gray-700 text-dark100_light500 hover:bg-primary-100 hover:text-white"
-              }`}
+                }`}
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >

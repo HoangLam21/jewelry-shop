@@ -59,25 +59,47 @@ export default function Page() {
 
   // Fetch user data
   useEffect(() => {
-    // Redirect admin/staff đến /admin CHỈ KHI vừa login (từ sign-in hoặc callback)
-    // Không redirect nếu admin navigate từ trang khác đến home
+    // Redirect admin/staff đến /admin CHỈ KHI vừa đăng nhập
+    // Cho phép admin/staff ở lại home nếu họ navigate từ trang khác
     if (isLoaded && user && typeof window !== "undefined") {
       const userRole = user.publicMetadata?.role as string | undefined;
-      
+
       if (userRole === "admin" || userRole === "staff") {
-        // Chỉ redirect nếu referrer thực sự là từ sign-in hoặc auth/callback
-        // Nếu không có referrer hoặc referrer là từ trang khác, thì KHÔNG redirect
         const referrer = document.referrer;
-        const isFromSignIn = referrer && (referrer.includes("/sign-in") || referrer.includes("/auth/callback"));
-        
-        if (isFromSignIn) {
-          console.log(`[Home] User is ${userRole}, redirecting to /admin (just logged in from: ${referrer})`);
+
+        // Chỉ redirect nếu thực sự vừa đăng nhập:
+        // 1. Đến từ auth flow (sign-in, callback, Clerk domain)
+        const isFromAuth = referrer && (
+          referrer.includes("/sign-in") ||
+          referrer.includes("/sign-up") ||
+          referrer.includes("/auth/callback") ||
+          referrer.includes("clerk.accounts.dev") ||
+          referrer.includes("clerk.com")
+        );
+
+        // 2. Hoặc có flag trong sessionStorage (được set khi vừa login)
+        const justLoggedIn = sessionStorage.getItem("justLoggedIn") === "true";
+
+        // 3. Hoặc không có referrer VÀ chưa từng vào home trong session này
+        // (để xử lý trường hợp direct access lần đầu)
+        const hasVisitedHome = sessionStorage.getItem("hasVisitedHome") === "true";
+        const isFirstVisit = !referrer && !hasVisitedHome;
+
+        // Chỉ redirect nếu thực sự vừa đăng nhập
+        if (isFromAuth || justLoggedIn || isFirstVisit) {
+          console.log(`[Home] User is ${userRole}, redirecting to /admin (referrer: ${referrer || 'first visit'})`);
+          // Clear flags
+          sessionStorage.removeItem("justLoggedIn");
+          sessionStorage.setItem("hasVisitedHome", "true");
           // Sử dụng window.location để force redirect
           window.location.href = "/admin";
           return;
         } else {
-          // Admin đã navigate từ trang khác, cho phép ở lại home
-          console.log(`[Home] User is ${userRole}, staying on home page (referrer: ${referrer || 'none'})`);
+          // Admin/Staff đã navigate từ trang khác về home
+          // Cho phép ở lại home để xem sản phẩm
+          console.log(`[Home] User is ${userRole}, staying on home page (navigated from: ${referrer || 'unknown'})`);
+          // Đánh dấu đã vào home
+          sessionStorage.setItem("hasVisitedHome", "true");
         }
       }
     }
@@ -92,7 +114,7 @@ export default function Page() {
       // Chỉ fetch customer data nếu user là customer
       // Admin và Staff không cần customer data và sẽ bị 403 nếu gọi API này
       const userRole = user.publicMetadata?.role as string | undefined;
-      
+
       // Nếu role không phải customer, skip (không gọi API)
       if (userRole && userRole !== "customer") {
         // Admin/Staff không cần customer data, skip
