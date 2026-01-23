@@ -56,7 +56,7 @@ const Navbar = () => {
   return (
     <nav className="flex-between background-light700_dark300 fixed z-50 h-[79px] w-full gap-5 border-b p-6 dark:border-transparent sm:px-5">
       <Link href="/" className="flex items-center gap-1 pl-5">
-        <p className="text-dark100_light500 text-3xl jost">JewelryStore</p>
+        <p className="text-dark100_light500 text-3xl jost">JEWELRYSTORE</p>
         <p className="text-primary-100 text-3xl">.</p>
       </Link>
 
@@ -69,11 +69,10 @@ const Navbar = () => {
               <SheetClose asChild key={item.route}>
                 <Link
                   href={item.route}
-                  className={`${
-                    isActive
+                  className={`${isActive
                       ? "text-primary-100 rounded-lg"
                       : "text-dark100_light500"
-                  } text-[13px] w-[120px] font-medium flex h-[40px] items-center justify-center gap-4 bg-transparent p-4`}
+                    } text-[13px] w-[120px] font-medium flex h-[40px] items-center justify-center gap-4 bg-transparent p-4`}
                 >
                   <p className={`${isActive ? "font-medium" : ""}`}>
                     {item.label}
