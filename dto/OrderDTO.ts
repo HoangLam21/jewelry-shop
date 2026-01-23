@@ -36,7 +36,7 @@ export interface CreateOrder {
   shippingMethod: string;
   ETD: Date;
   customer: string;
-  staff: string;
+  staff?: string;
 }
 
 export interface DetailOrder {

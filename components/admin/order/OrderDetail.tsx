@@ -290,17 +290,17 @@ const OrderDetail = () => {
 
   const statusConfig = orderDetail.order.status
     ? {
-        bg: "bg-green-100 dark:bg-green-900/30",
-        text: "text-green-700 dark:text-green-400",
-        icon: <CheckCircle className="w-5 h-5" />,
-        label: "Delivered",
-      }
+      bg: "bg-green-100 dark:bg-green-900/30",
+      text: "text-green-700 dark:text-green-400",
+      icon: <CheckCircle className="w-5 h-5" />,
+      label: "Delivered",
+    }
     : {
-        bg: "bg-yellow-100 dark:bg-yellow-900/30",
-        text: "text-yellow-700 dark:text-yellow-400",
-        icon: <Clock className="w-5 h-5" />,
-        label: "Pending",
-      };
+      bg: "bg-yellow-100 dark:bg-yellow-900/30",
+      text: "text-yellow-700 dark:text-yellow-400",
+      icon: <Clock className="w-5 h-5" />,
+      label: "Pending",
+    };
 
   const renderRow = (item: any) => (
     <tr
@@ -355,81 +355,42 @@ const OrderDetail = () => {
     orderDetail.order.cost / (1 - orderDetail.order.discount / 100);
 
   return (
-    <div className="w-full space-y-6">
-      {/* Order Overview Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <ShoppingCart className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                Order Details
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                Order ID: #{id.slice(-8)}
-              </p>
-            </div>
+    <div className="w-full h-full rounded-md shadow-md">
+      <div className="p-4 flex flex-col gap-4">
+        {/* Import Information */}
+        <div className="w-full flex gap-20 items-center">
+          <div className="flex-1 grid grid-cols-1">
+            <LabelInformation title="Id" content={`# ${id}`} />
+            <LabelInformation
+              title="Create At"
+              content={`${format(orderDetail.order.createAt, "PPP")}`}
+            />
+            <LabelInformation
+              title="Status"
+              content={`${orderDetail.order.status}`}
+            />
+            <LabelInformation
+              title="Created By"
+              content={`${orderDetail.order.staff._id}`}
+            />
           </div>
         </div>
 
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <Receipt className="w-4 h-4" />
-                <span className="text-sm font-medium">Order ID</span>
-              </div>
-              <p className="text-gray-900 dark:text-white font-semibold">
-                #{id.slice(-8)}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm font-medium">Created Date</span>
-              </div>
-              <p className="text-gray-900 dark:text-white font-semibold">
-                {format(new Date(orderDetail.order.createAt), "MMM dd, yyyy")}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <User className="w-4 h-4" />
-                <span className="text-sm font-medium">Created By</span>
-              </div>
-              <p className="text-gray-900 dark:text-white font-semibold">
-                {orderDetail.order.staff.fullName}
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                {statusConfig.icon}
-                <span className="text-sm font-medium">Status</span>
-              </div>
-              <span
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold ${statusConfig.bg} ${statusConfig.text}`}
-              >
-                {statusConfig.label}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Staff Information Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-2">
-            <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Staff Information
-            </h3>
-          </div>
+        {/* Supplier Information */}
+        <TitleSession title="Supplier Information" />
+        <div className="grid grid-cols-1 gap-2 ">
+          <LabelInformation
+            title="Name"
+            content={`${orderDetail.order.staff.fullName}`}
+          />
+          <LabelInformation
+            title="Phone number"
+            content={`${orderDetail.order.staff.phoneNumber}`}
+          />
+          <LabelInformation
+            title="Address"
+            content={`${orderDetail.order.staff.address}`}
+          />
         </div>
 
         <div className="p-6">

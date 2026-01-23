@@ -22,7 +22,7 @@ export interface IOrder extends Document, IAudit {
     phoneNumber?:Schema.Types.ObjectId;
     note?:string;
     address?:string;
-    staff: Schema.Types.ObjectId;
+    staff?: Schema.Types.ObjectId;
 }
 
 const OrderSchema = new Schema<IOrder>({
@@ -47,11 +47,20 @@ const OrderSchema = new Schema<IOrder>({
     phoneNumber:{type:String},
     note:{type:String},
     address:{type:String},
-    staff: { type: Schema.Types.ObjectId, required: true, ref: "Staff" },
+    staff: { type: Schema.Types.ObjectId, required: false, ref: "Staff", default: null },
+}, {
+    // Force schema update to clear cache
+    strict: true,
+    strictQuery: false
 });
 
 OrderSchema.add(AuditSchema);
 
-const Order = models.Order || model("Order", OrderSchema);
+// Delete existing model to force recreation with new schema
+if (models.Order) {
+    delete models.Order;
+}
+
+const Order = model<IOrder>("Order", OrderSchema);
 // added new value for order
 export default Order;

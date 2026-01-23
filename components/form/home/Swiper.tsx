@@ -35,6 +35,13 @@ const ProductSwiper = ({ productsData }: ProductsProps) => {
     router.push(`/product/${id}`);
   };
 
+  // Normalize URL to use https for Cloudinary
+  const normalizeImageUrl = (url: string): string => {
+    if (!url) return url;
+    // Replace http:// with https:// for Cloudinary URLs
+    return url.replace(/^http:\/\//, "https://");
+  };
+
   return (
     <div className="w-full overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-gray-900 dark:to-slate-800 -mt-8 sm:-mt-12 md:-mt-16 lg:-mt-20">
       <Swiper
@@ -105,7 +112,7 @@ const ProductSwiper = ({ productsData }: ProductsProps) => {
                     {/* Main Image */}
                     <div className="relative z-10 group">
                       <Image
-                        src={item.files[0].url}
+                        src={normalizeImageUrl(item.files[0].url)}
                         alt={item.name}
                         width={320}
                         height={450}
@@ -129,7 +136,7 @@ const ProductSwiper = ({ productsData }: ProductsProps) => {
                       <div className="relative group">
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-400/30 to-purple-400/30 rounded-full blur-xl"></div>
                         <Image
-                          src={item.files[0].url}
+                          src={normalizeImageUrl(item.files[0].url)}
                           alt=""
                           width={160}
                           height={160}

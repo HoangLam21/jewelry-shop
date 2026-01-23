@@ -123,11 +123,17 @@ export const createOrder = async (data: {
   phoneNumber?: string;
   note?: string;
   address?: string;
-  staff: string;
+  staff?: string;
 }) => {
   try {
     await connectToDatabase();
-    const newOrder = await Order.create({
+    
+    // Validate customer exists
+    if (!data.customer) {
+      throw new Error("Customer ID is required");
+    }
+
+    const orderData: any = {
       cost: data.cost,
       discount: data.discount,
       details: data.details,
@@ -138,12 +144,28 @@ export const createOrder = async (data: {
       phoneNumber: data.phoneNumber,
       note: data.note,
       address: data.address,
-      staff: new ObjectId(data.staff)
+    };
+
+    // Only add staff if provided and not empty, otherwise set to null
+    if (data.staff && data.staff.trim() !== "") {
+      orderData.staff = new ObjectId(data.staff);
+    } else {
+      // Explicitly set to null to satisfy schema (even though required: false)
+      orderData.staff = null;
+    }
+
+    console.log("[createOrder] Creating order with data:", {
+      customer: orderData.customer,
+      staff: orderData.staff || "undefined",
+      cost: orderData.cost
     });
+
+    const newOrder = await Order.create(orderData);
     return newOrder.toObject();
   } catch (error) {
     console.log("Error creating Order: ", error);
-    throw new Error("Failed to create order");
+    const errorMessage = error instanceof Error ? error.message : "Failed to create order";
+    throw new Error(errorMessage);
   }
 };
 
@@ -300,7 +322,7 @@ export const getOrderById = async (id: string) => {
       });
     }
     const customer = await Customer.findById(order.customer);
-    const staff = await Staff.findById(order.staff);
+    const staff = order.staff ? await Staff.findById(order.staff) : null;
     return {
       order: {
         ...order.toObject(),
