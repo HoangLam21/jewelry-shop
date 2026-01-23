@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useCart } from "@/contexts/CartContext";
 import { addToCart } from "@/lib/services/cart.service";
 import { useRouter } from "next/navigation";
@@ -74,12 +74,16 @@ const ProductCard = ({ item }: ProductCardProps) => {
       >
         {/* Product Image Container */}
         <div className="relative h-[350px] overflow-hidden rounded-lg cursor-pointer">
-          <img
-            src={item.files[0].url}
-            alt={item.name}
-            onClick={() => handleNavigateProductDetail(item.slug)}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
+          <div className="relative h-[350px] overflow-hidden rounded-lg cursor-pointer">
+            <Image
+              src={item.files?.[0]?.url || "/placeholder.jpg"}
+              alt={item.name}
+              fill
+              sizes="(max-width: 768px) 100vw, 260px"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              onClick={() => handleNavigateProductDetail(item.slug)}
+            />
+          </div>
 
           {/* Hover Overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300" />
