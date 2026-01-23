@@ -10,6 +10,7 @@ import Image from "next/image";
 import { navbarLinks } from "@/constants";
 import { usePathname } from "next/navigation";
 import { Icon } from "@iconify/react";
+import { ShoppingCart } from "lucide-react";
 
 const NavContent = () => {
   const pathname = usePathname();
@@ -55,13 +56,24 @@ const MobileNav = () => {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="background-light700_dark300 border-none"
+        className="bg-white dark:bg-dark-300 border-none"
       >
         <Link href="/" className="flex items-center gap-1 pl-5">
           <p className="text-dark100_light500 text-3xl logo">JewelryStore</p>
           <p className="text-primary-100 text-3xl">.</p>
         </Link>
 
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-4">
+          <SheetClose asChild>
+            <Link
+              href="/cart"
+              className="flex items-center justify-center gap-3 rounded-xl bg-primary-100 text-white py-3 font-medium hover:bg-primary-200 transition"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              <span>Cart</span>
+            </Link>
+          </SheetClose>
+        </div>
         <div>
           <SheetClose asChild>
             <NavContent />
