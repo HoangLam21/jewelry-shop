@@ -496,6 +496,16 @@ import Table from "@/components/shared/table/Table";
 import PaginationUI from "@/types/pagination/Pagination";
 import Format from "@/components/shared/card/ConfirmCard";
 import { deleteCustomer, fetchCustomer } from "@/lib/service/customer.service";
+import {
+  Phone,
+  Mail,
+  DollarSign,
+  Star,
+  Package,
+  Eye,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 // DTO Interfaces
 interface Order {
@@ -826,43 +836,18 @@ const CustomerList = () => {
 
       {/* Actions - CRITICAL: Always visible, no hidden classes */}
       <td className="px-6 py-4">
-        <div className="flex items-center gap-2 justify-end">
-          <Link
-            href={`/admin/customer/${item.id}`}
-            className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors inline-flex items-center justify-center"
-            title="View customer details"
-          >
-            <Icon
-              icon="solar:eye-linear"
-              width={20}
-              height={20}
-              className="text-blue-600 dark:text-blue-400"
-            />
+        <div className="flex gap-2 justify-end">
+          <Link href={`/admin/customer/${item.id}`}>
+            <Eye className="text-blue-500 cursor-pointer" size={20} />
           </Link>
-          <Link
-            href={`/admin/customer/edit/${item.id}`}
-            className="p-2 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors inline-flex items-center justify-center"
-            title="Edit customer"
-          >
-            <Icon
-              icon="solar:pen-linear"
-              width={20}
-              height={20}
-              className="text-green-600 dark:text-green-400"
-            />
+          <Link href={`/admin/customer/edit/${item.id}`}>
+            <Pencil className="text-green-500 cursor-pointer" size={20} />
           </Link>
-          <button
+          <Trash2
+            size={20}
+            className="text-red-500 cursor-pointer"
             onClick={() => setDeleteCustomerId(item.id)}
-            className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors inline-flex items-center justify-center"
-            title="Delete customer"
-          >
-            <Icon
-              icon="solar:trash-bin-trash-linear"
-              width={20}
-              height={20}
-              className="text-red-600 dark:text-red-400"
-            />
-          </button>
+          />
         </div>
       </td>
     </tr>
