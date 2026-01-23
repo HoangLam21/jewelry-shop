@@ -57,24 +57,45 @@ export default function Page() {
     vouchers: true,
   });
 
-  // Fetch user data
+  // Fetch user data and role
   useEffect(() => {
     // Redirect admin/staff đến /admin CHỈ KHI vừa đăng nhập
     // Cho phép admin/staff ở lại home nếu họ navigate từ trang khác
-    if (isLoaded && user && typeof window !== "undefined") {
-      const userRole = user.publicMetadata?.role as string | undefined;
+    const checkRoleAndRedirect = async () => {
+      if (!isLoaded || !user || typeof window === "undefined") {
+        return;
+      }
+
+      // Ưu tiên lấy role từ publicMetadata (nhanh nhất)
+      let userRole = user.publicMetadata?.role as string | undefined;
+
+      // Nếu không có role trong metadata, fetch từ API (fallback)
+      if (!userRole && user.id) {
+        try {
+          const response = await fetch(`/api/auth/role?userId=${user.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            userRole = data.role;
+            console.log(`[Home] Role fetched from API: ${userRole}`);
+          }
+        } catch (error) {
+          console.warn("[Home] Could not fetch role from API:", error);
+        }
+      }
 
       if (userRole === "admin" || userRole === "staff") {
         const referrer = document.referrer;
 
         // Chỉ redirect nếu thực sự vừa đăng nhập:
-        // 1. Đến từ auth flow (sign-in, callback, Clerk domain)
+        // 1. Đến từ auth flow (sign-in, callback, Clerk domain, Google OAuth)
         const isFromAuth = referrer && (
           referrer.includes("/sign-in") ||
           referrer.includes("/sign-up") ||
           referrer.includes("/auth/callback") ||
           referrer.includes("clerk.accounts.dev") ||
-          referrer.includes("clerk.com")
+          referrer.includes("clerk.com") ||
+          referrer.includes("accounts.google.com") ||
+          referrer.includes("oauth")
         );
 
         // 2. Hoặc có flag trong sessionStorage (được set khi vừa login)
@@ -102,7 +123,9 @@ export default function Page() {
           sessionStorage.setItem("hasVisitedHome", "true");
         }
       }
-    }
+    };
+
+    checkRoleAndRedirect();
   }, [user, isLoaded]);
 
   useEffect(() => {
@@ -113,7 +136,20 @@ export default function Page() {
 
       // Chỉ fetch customer data nếu user là customer
       // Admin và Staff không cần customer data và sẽ bị 403 nếu gọi API này
-      const userRole = user.publicMetadata?.role as string | undefined;
+      let userRole = user.publicMetadata?.role as string | undefined;
+
+      // Nếu không có role trong metadata, fetch từ API (fallback)
+      if (!userRole && user.id) {
+        try {
+          const response = await fetch(`/api/auth/role?userId=${user.id}`);
+          if (response.ok) {
+            const data = await response.json();
+            userRole = data.role;
+          }
+        } catch (error) {
+          console.warn("[Home] Could not fetch role from API:", error);
+        }
+      }
 
       // Nếu role không phải customer, skip (không gọi API)
       if (userRole && userRole !== "customer") {
