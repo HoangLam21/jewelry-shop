@@ -133,6 +133,15 @@ export const createOrder = async (data: {
       throw new Error("Customer ID is required");
     }
 
+    // Validate ObjectId format
+    const isValidObjectId = (id: string): boolean => {
+      return /^[0-9a-fA-F]{24}$/.test(id);
+    };
+
+    if (!isValidObjectId(data.customer)) {
+      throw new Error(`Invalid customer ID format: ${data.customer}. Customer ID must be a valid 24-character hex string.`);
+    }
+
     const orderData: any = {
       cost: data.cost,
       discount: data.discount,
@@ -148,6 +157,10 @@ export const createOrder = async (data: {
 
     // Only add staff if provided and not empty, otherwise set to null
     if (data.staff && data.staff.trim() !== "") {
+      // Validate staff ObjectId format if provided
+      if (!isValidObjectId(data.staff)) {
+        throw new Error(`Invalid staff ID format: ${data.staff}. Staff ID must be a valid 24-character hex string.`);
+      }
       orderData.staff = new ObjectId(data.staff);
     } else {
       // Explicitly set to null to satisfy schema (even though required: false)
