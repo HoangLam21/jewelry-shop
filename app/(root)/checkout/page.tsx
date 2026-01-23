@@ -235,8 +235,8 @@ export default function Page() {
       status: "pending",
       shippingMethod: deliveryMethod,
       ETD: addDays(3),
-      customer: user?._id || "6776bd0974de08ccc866a4ab",
-      staff: "6776bdee74de08ccc866a4be",
+      customer: user?._id || "", // Customer ID sẽ được tự động set bởi API từ user đang đăng nhập
+      staff: "", // Staff ID sẽ được tự động set bởi API từ user đang đăng nhập (nếu là staff/admin)
       phoneNumber,
       note,
       address,
@@ -486,11 +486,10 @@ export default function Page() {
                     <span>Fast Delivery (+5k shipping fee)</span>
                   </label>
                   <label
-                    className={`flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg ${
-                      city.toLowerCase() === "ho chi minh"
+                    className={`flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg ${city.toLowerCase() === "ho chi minh"
                         ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-300"
                         : "opacity-50 cursor-not-allowed"
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"

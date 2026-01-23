@@ -48,13 +48,16 @@ export default function RootLayout({
             },
           }}
           // Add domain if using custom domain (optional)
-          // domain={process.env.NEXT_PUBLIC_CLERK_DOMAIN}
+          {...(process.env.NEXT_PUBLIC_CLERK_DOMAIN && {
+            domain: process.env.NEXT_PUBLIC_CLERK_DOMAIN,
+          })}
           // Add afterSignInUrl and afterSignUpUrl for better UX
           // Redirect đến callback route để check role và redirect tương ứng
           afterSignInUrl="/auth/callback"
           afterSignUpUrl="/auth/callback"
-          // Load Clerk asynchronously to prevent blocking and timeout issues
-          // This allows Clerk to load in the background without blocking the page
+          afterSignOutUrl="/"
+          // Type assertion để fix TypeScript error với Next.js 16
+          {...({} as any)}
         >
           <ClerkWrapper>
             <ThemeProvider>

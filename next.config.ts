@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "example.com" },
       { protocol: "https", hostname: "res.cloudinary.com" },
     ],
-    domains: ["i.pinimg.com", "example.com", "res.cloudinary.com"],
+    // domains is deprecated, using remotePatterns instead
   },
 
   async headers() {
@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
               `style-src 'self' 'unsafe-inline' ${clerkProxy} https://*.clerk.accounts.dev https://*.clerk.com https://clerk.com`,
               "img-src 'self' data: https: blob:",
               "font-src 'self' data: https:",
-              `connect-src 'self' ${clerkProxy} https://*.clerk.accounts.dev https://*.clerk.com https://clerk.com wss://*.clerk.accounts.dev https://api.clerk.com`,
+              `connect-src 'self' ${clerkProxy} https://*.clerk.accounts.dev https://*.clerk.com https://clerk.com wss://*.clerk.accounts.dev https://api.clerk.com https://*.clerk.dev https://api.iconify.design https://api.unisvg.com https://api.simplesvg.com`,
               `frame-src 'self' ${clerkProxy} https://*.clerk.accounts.dev https://*.clerk.com https://clerk.com`,
               "worker-src 'self' blob:",
             ].join("; "),

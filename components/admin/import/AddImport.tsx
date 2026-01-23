@@ -51,7 +51,7 @@ const AddImport = () => {
   const [item, setItem] = useState<CreateImport>({
     details: [],
     provider: "",
-    staff: "6776bdd574de08ccc866a4b8",
+    staff: "", // Staff ID sẽ được tự động set bởi API từ user đang đăng nhập
   });
 
   useEffect(() => {
@@ -70,12 +70,13 @@ const AddImport = () => {
             description: item.description,
             vouchers: item.vouchers?.[item.vouchers.length - 1]?._id || "",
             provider: item.provider ? item.provider._id : "",
-            category:
-              typeof item.category === "string"
-                ? item.category
-                : item.category?._id || "",
+
+            // ✅ FIX category luôn string
+            category: typeof item.category === "string" ? item.category : item.category?._id || "",
+
             variants: item.variants,
           }));
+
           setList(data);
         }
       } catch (err: any) {
@@ -166,7 +167,7 @@ const AddImport = () => {
       const data: CreateImport = {
         details: item.details,
         provider: item.provider,
-        staff: item.staff,
+        staff: item.staff, // Staff ID sẽ được tự động set bởi API từ user đang đăng nhập
       };
 
       const result = await createImport(data);

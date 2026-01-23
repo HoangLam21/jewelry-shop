@@ -31,6 +31,16 @@ export async function createClerkUser(data: {
   phoneNumber?: string;
 }): Promise<{ success: boolean; userId?: string; message: string; error?: string }> {
   try {
+    // Kiểm tra CLERK_SECRET_KEY có tồn tại không
+    if (!process.env.CLERK_SECRET_KEY) {
+      console.error("[Clerk Create User] ❌ CLERK_SECRET_KEY is missing in environment variables");
+      return {
+        success: false,
+        message: "Cấu hình Clerk chưa đầy đủ. Vui lòng kiểm tra CLERK_SECRET_KEY trong file .env",
+        error: "CLERK_SECRET_KEY missing"
+      };
+    }
+
     const client = await clerkClient();
     
     // Validate email
@@ -72,37 +82,13 @@ export async function createClerkUser(data: {
       };
     }
 
-    // Nếu không có password, sử dụng Invitations API để gửi invitation email
-    // User sẽ nhận email và tự set password khi accept invitation
-    console.log(`[Clerk Create Invitation] Creating invitation for: ${data.email}`);
-    
-    const invitationParams: any = {
-      emailAddress: data.email,
-      notify: true, // Gửi email invitation
-    };
-
-    // Thêm public metadata nếu có firstName/lastName
-    if (data.firstName || data.lastName) {
-      invitationParams.publicMetadata = {
-        firstName: data.firstName || '',
-        lastName: data.lastName || ''
-      };
-    }
-
-    const invitation = await client.invitations.createInvitation(invitationParams);
-    console.log(`[Clerk Create Invitation] Invitation created: ${invitation.id}`);
-
-    // LƯU Ý: Invitation chưa tạo user ngay lập tức
-    // User sẽ được tạo khi họ accept invitation và set password
-    // Vì vậy, chúng ta không có userId ngay bây giờ
-    // Cần xử lý khác: tạo Staff record trước, sau đó update clerkId khi user accept invitation
-    // HOẶC: tạo user với password tạm thời, sau đó gửi invitation để đổi password
-
-    // Giải pháp tạm thời: Tạo user với password random, sau đó gửi invitation
-    // Nhưng cách này không tốt vì user sẽ có password random
-
-    // Tạo user với skipPasswordRequirement để không cần password
-    // User sẽ nhận invitation email và tự set password
+    // Nếu không có password, tạo user với skipPasswordRequirement
+    // Sau đó gửi invitation email để user tự set password
+    console.log(`[Clerk Create User] Creating user without password (will send invitation):`, {
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName
+    });
     const createUserParams: any = {
       emailAddress: [data.email],
       skipPasswordRequirement: true, // Bỏ qua yêu cầu password
@@ -121,19 +107,68 @@ export async function createClerkUser(data: {
       lastName: createUserParams.lastName
     });
 
-    const clerkUser = await client.users.createUser(createUserParams);
-    console.log(`[Clerk Create User] User created successfully with ID: ${clerkUser.id}`);
+    // Tạo user với retry logic để xử lý network errors
+    let clerkUser;
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
+        clerkUser = await client.users.createUser(createUserParams);
+        console.log(`[Clerk Create User] User created successfully with ID: ${clerkUser.id}`);
+        break;
+      } catch (createError: any) {
+        retryCount++;
+        console.error(`[Clerk Create User] Attempt ${retryCount}/${maxRetries} failed:`, {
+          error: createError?.message,
+          code: createError?.code,
+          status: createError?.status,
+          errors: createError?.errors
+        });
+        
+        if (retryCount >= maxRetries) {
+          throw createError;
+        }
+        
+        // Đợi một chút trước khi retry (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+      }
+    }
 
-    // Sau khi tạo user, gửi invitation để user set password
+    // Kiểm tra xem clerkUser đã được tạo thành công chưa
+    if (!clerkUser) {
+      return {
+        success: false,
+        message: "Failed to create Clerk user after multiple retries.",
+        error: "USER_CREATION_FAILED"
+      };
+    }
+
+    // Sau khi tạo user thành công, gửi invitation để user set password
     try {
-      await client.invitations.createInvitation({
+      const invitationParams: any = {
         emailAddress: data.email,
-        notify: true, // Gửi email invitation
-      });
+        notify: true,
+      };
+
+      // Thêm public metadata nếu có firstName/lastName
+      if (data.firstName || data.lastName) {
+        invitationParams.publicMetadata = {
+          firstName: data.firstName || '',
+          lastName: data.lastName || ''
+        };
+      }
+
+      await client.invitations.createInvitation(invitationParams);
       console.log(`[Clerk Create Invitation] Invitation sent to ${data.email}`);
-    } catch (invitationError) {
-      console.warn(`[Clerk Create Invitation] Could not send invitation:`, invitationError);
+    } catch (invitationError: any) {
+      console.warn(`[Clerk Create Invitation] Could not send invitation:`, {
+        error: invitationError?.message,
+        code: invitationError?.code,
+        status: invitationError?.status
+      });
       // Không throw error vì user đã được tạo, chỉ cảnh báo
+      // User có thể set password sau bằng cách request password reset
     }
 
     return {
@@ -147,8 +182,25 @@ export async function createClerkUser(data: {
       status: error?.status,
       errors: error?.errors,
       message: error?.message,
-      clerkTraceId: error?.clerkTraceId
+      clerkTraceId: error?.clerkTraceId,
+      code: error?.code,
+      cause: error?.cause
     });
+    
+    // Kiểm tra nếu là network error
+    if (error?.message?.includes("fetch failed") || error?.code === "unexpected_error") {
+      console.error("[Clerk Create User] Network error detected - possible causes:");
+      console.error("1. CLERK_SECRET_KEY might be incorrect or missing");
+      console.error("2. Network connectivity issue");
+      console.error("3. Clerk API service might be temporarily unavailable");
+      console.error("4. CSP or firewall blocking Clerk API calls");
+      
+      return {
+        success: false,
+        message: "Không thể kết nối đến Clerk API. Vui lòng kiểm tra kết nối mạng và cấu hình CLERK_SECRET_KEY.",
+        error: `Network error: ${error?.message || "fetch failed"}`
+      };
+    }
     
     // Xử lý các lỗi phổ biến
     let errorMessage = "Không thể tạo tài khoản Clerk";

@@ -13,7 +13,8 @@ import { fetchProducts } from "@/lib/services/product.service";
 import SearchModal from "@/components/form/search/SearchModal";
 import { ShoppingCart, Search, User } from "lucide-react";
 
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import SafeUserButton from "@/components/auth/SafeUserButton";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -105,7 +106,7 @@ const Navbar = () => {
 
         {/* Auth Buttons */}
         <SignedIn>
-          <UserButton />
+          <SafeUserButton />
         </SignedIn>
         <SignedOut>
           <SignInButton>
