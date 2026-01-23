@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -45,6 +46,7 @@ const SaleSkeleton = () => (
 
 export default function Page() {
   const { user, isLoaded } = useUser();
+  const router = useRouter();
   const [productsData, setProductsData] = useState<ProductResponse[]>([]);
   const [categoriesData, setCategoriesData] = useState<CategoryResponse[]>([]);
   const [vouchersData, setVouchersData] = useState<Voucher[]>([]);
@@ -57,16 +59,61 @@ export default function Page() {
 
   // Fetch user data
   useEffect(() => {
+    // Redirect admin/staff đến /admin CHỈ KHI vừa login (từ sign-in hoặc callback)
+    // Không redirect nếu admin navigate từ trang khác đến home
+    if (isLoaded && user && typeof window !== "undefined") {
+      const userRole = user.publicMetadata?.role as string | undefined;
+      
+      if (userRole === "admin" || userRole === "staff") {
+        // Chỉ redirect nếu referrer thực sự là từ sign-in hoặc auth/callback
+        // Nếu không có referrer hoặc referrer là từ trang khác, thì KHÔNG redirect
+        const referrer = document.referrer;
+        const isFromSignIn = referrer && (referrer.includes("/sign-in") || referrer.includes("/auth/callback"));
+        
+        if (isFromSignIn) {
+          console.log(`[Home] User is ${userRole}, redirecting to /admin (just logged in from: ${referrer})`);
+          // Sử dụng window.location để force redirect
+          window.location.href = "/admin";
+          return;
+        } else {
+          // Admin đã navigate từ trang khác, cho phép ở lại home
+          console.log(`[Home] User is ${userRole}, staying on home page (referrer: ${referrer || 'none'})`);
+        }
+      }
+    }
+  }, [user, isLoaded]);
+
+  useEffect(() => {
     const fetchAndSaveUser = async () => {
       if (!isLoaded || !user) {
         return;
       }
 
+      // Chỉ fetch customer data nếu user là customer
+      // Admin và Staff không cần customer data và sẽ bị 403 nếu gọi API này
+      const userRole = user.publicMetadata?.role as string | undefined;
+      
+      // Nếu role không phải customer, skip (không gọi API)
+      if (userRole && userRole !== "customer") {
+        // Admin/Staff không cần customer data, skip
+        console.log(`[Home] User is ${userRole}, skipping customer data fetch`);
+        return;
+      }
+
+      // Chỉ gọi API nếu:
+      // 1. Role là "customer" HOẶC
+      // 2. Role chưa được set (có thể là customer mới đăng ký)
       try {
         const customerData = await getCurrentCustomer();
         localStorage.setItem("userData", JSON.stringify(customerData));
-      } catch (error) {
+      } catch (error: any) {
+        // Bắt lỗi 403 (Forbidden) - Admin/Staff không thể gọi API này
+        if (error?.message?.includes("Forbidden") || error?.message?.includes("403")) {
+          console.log(`[Home] User is not a customer, skipping customer data fetch`);
+          return;
+        }
         console.error("Error fetching customer data:", error);
+        // Không throw error để không block trang
       }
     };
 
