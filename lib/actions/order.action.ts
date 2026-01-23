@@ -61,7 +61,7 @@ export const getOrders = async () => {
 export const getOrdersByCustomerId = async (customerId: string) => {
   try {
     await connectToDatabase();
-    const orders = await Order.find({ customer: new ObjectId(customerId) })
+    const orders = await Order.find({ customer: new ObjectId(customerId) } as any)
       .populate("customer")
       .populate("staff");
 
