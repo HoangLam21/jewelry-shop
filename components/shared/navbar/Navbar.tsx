@@ -70,8 +70,8 @@ const Navbar = () => {
                 <Link
                   href={item.route}
                   className={`${isActive
-                      ? "text-primary-100 rounded-lg"
-                      : "text-dark100_light500"
+                    ? "text-primary-100 rounded-lg"
+                    : "text-dark100_light500"
                     } text-[13px] w-[120px] font-medium flex h-[40px] items-center justify-center gap-4 bg-transparent p-4`}
                 >
                   <p className={`${isActive ? "font-medium" : ""}`}>
