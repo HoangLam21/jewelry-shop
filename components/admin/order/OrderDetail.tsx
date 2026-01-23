@@ -205,6 +205,8 @@ import { format } from "date-fns";
 import Image from "next/image";
 import { getOrderById } from "@/lib/service/order.service";
 import TableImport from "@/components/shared/table/TableImport";
+import LabelInformation from "@/components/shared/label/LabelInformation";
+import TitleSession from "@/components/shared/label/TitleSession";
 import {
   ShoppingCart,
   Calendar,
@@ -371,61 +373,65 @@ const OrderDetail = () => {
             />
             <LabelInformation
               title="Created By"
-              content={`${orderDetail.order.staff._id}`}
+              content={orderDetail.order.staff?._id || "N/A"}
             />
           </div>
         </div>
 
         {/* Supplier Information */}
-        <TitleSession title="Supplier Information" />
-        <div className="grid grid-cols-1 gap-2 ">
-          <LabelInformation
-            title="Name"
-            content={`${orderDetail.order.staff.fullName}`}
-          />
-          <LabelInformation
-            title="Phone number"
-            content={`${orderDetail.order.staff.phoneNumber}`}
-          />
-          <LabelInformation
-            title="Address"
-            content={`${orderDetail.order.staff.address}`}
-          />
-        </div>
-
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <User className="w-4 h-4" />
-                <span className="text-sm font-medium">Staff Name</span>
-              </div>
-              <p className="text-gray-900 dark:text-white font-semibold">
-                {orderDetail.order.staff.fullName}
-              </p>
+        {orderDetail.order.staff && (
+          <>
+            <TitleSession title="Supplier Information" />
+            <div className="grid grid-cols-1 gap-2 ">
+              <LabelInformation
+                title="Name"
+                content={orderDetail.order.staff.fullName || "N/A"}
+              />
+              <LabelInformation
+                title="Phone number"
+                content={orderDetail.order.staff.phoneNumber || "N/A"}
+              />
+              <LabelInformation
+                title="Address"
+                content={orderDetail.order.staff.address || "N/A"}
+              />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <Phone className="w-4 h-4" />
-                <span className="text-sm font-medium">Phone Number</span>
-              </div>
-              <p className="text-gray-900 dark:text-white font-semibold">
-                {orderDetail.order.staff.phoneNumber}
-              </p>
-            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                    <User className="w-4 h-4" />
+                    <span className="text-sm font-medium">Staff Name</span>
+                  </div>
+                  <p className="text-gray-900 dark:text-white font-semibold">
+                    {orderDetail.order.staff.fullName || "N/A"}
+                  </p>
+                </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                <MapPin className="w-4 h-4" />
-                <span className="text-sm font-medium">Address</span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                    <Phone className="w-4 h-4" />
+                    <span className="text-sm font-medium">Phone Number</span>
+                  </div>
+                  <p className="text-gray-900 dark:text-white font-semibold">
+                    {orderDetail.order.staff.phoneNumber || "N/A"}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                    <MapPin className="w-4 h-4" />
+                    <span className="text-sm font-medium">Address</span>
+                  </div>
+                  <p className="text-gray-900 dark:text-white font-semibold">
+                    {orderDetail.order.staff.address || "N/A"}
+                  </p>
+                </div>
               </div>
-              <p className="text-gray-900 dark:text-white font-semibold">
-                {orderDetail.order.staff.address}
-              </p>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* Products Table */}

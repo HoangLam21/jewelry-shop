@@ -220,7 +220,7 @@ const AddOrder = () => {
               content={`${format(new Date(), "PPP")}`}
             />
             <LabelInformation title="Status" content={item.status} />
-            <LabelInformation title="Staff id" content={item.staff} />
+            <LabelInformation title="Staff id" content={item.staff || "N/A"} />
           </div>
         </div>
 
