@@ -269,7 +269,8 @@ export default function Page() {
         const payment = await payVNPay(data._id, totalFinalPrice + shippingFee);
         router.push(payment.url);
       } else {
-        router.push(`/order-success?orderId=${data._id}`);
+        alert("Order created successfully!");
+        router.push("/product");
       }
     } catch (error) {
       console.error("Error creating order:", error);
@@ -361,7 +362,7 @@ export default function Page() {
           {cart.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-500">Your cart is empty</p>
-              <Link href="/products">
+              <Link href="/product">
                 <button className="mt-4 px-6 py-3 bg-primary-100 text-white rounded-lg hover:bg-primary-200">
                   Continue Shopping
                 </button>
@@ -487,8 +488,8 @@ export default function Page() {
                   </label>
                   <label
                     className={`flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg ${city.toLowerCase() === "ho chi minh"
-                        ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-300"
-                        : "opacity-50 cursor-not-allowed"
+                      ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-300"
+                      : "opacity-50 cursor-not-allowed"
                       }`}
                   >
                     <input

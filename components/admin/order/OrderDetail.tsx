@@ -134,27 +134,31 @@ const OrderDetail = () => {
             />
             <LabelInformation
               title="Created By"
-              content={`${orderDetail.order.staff._id}`}
+              content={`${orderDetail.order.staff?._id || "N/A"}`}
             />
           </div>
         </div>
 
         {/* Supplier Information */}
-        <TitleSession title="Supplier Information" />
-        <div className="grid grid-cols-1 gap-2 ">
-          <LabelInformation
-            title="Name"
-            content={`${orderDetail.order.staff.fullName}`}
-          />
-          <LabelInformation
-            title="Phone number"
-            content={`${orderDetail.order.staff.phoneNumber}`}
-          />
-          <LabelInformation
-            title="Address"
-            content={`${orderDetail.order.staff.address}`}
-          />
-        </div>
+        {orderDetail.order.staff && (
+          <>
+            <TitleSession title="Supplier Information" />
+            <div className="grid grid-cols-1 gap-2 ">
+              <LabelInformation
+                title="Name"
+                content={`${orderDetail.order.staff.fullName || "N/A"}`}
+              />
+              <LabelInformation
+                title="Phone number"
+                content={`${orderDetail.order.staff.phoneNumber || "N/A"}`}
+              />
+              <LabelInformation
+                title="Address"
+                content={`${orderDetail.order.staff.address || "N/A"}`}
+              />
+            </div>
+          </>
+        )}
 
         {/* Invoice Detail */}
 

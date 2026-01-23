@@ -25,7 +25,7 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
       origin: req.headers.origin,
       referer: req.headers.referer
     })
-    
+
     // Thử getAuth với req
     let authResult
     try {
@@ -38,28 +38,28 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
         console.log('[API Auth] No cookies in request')
         return null
       }
-      
+
       // Thử lấy session token từ cookie
       const sessionTokenMatch = cookies.match(/__session=([^;]+)/)
       if (!sessionTokenMatch) {
         console.log('[API Auth] No __session cookie found')
         return null
       }
-      
+
       // Nếu có session token, cần verify với Clerk API
       // Nhưng cách này phức tạp, tốt hơn là fix getAuth
       console.log('[API Auth] Found __session cookie but getAuth failed')
       return null
     }
-    
+
     const { userId, sessionId } = authResult
-    
+
     console.log('[API Auth] getAuth result:', {
       isAuthenticated: authResult.isAuthenticated,
       userId: userId || 'null',
       sessionId: sessionId || 'null'
     })
-    
+
     if (!userId) {
       console.log('[API Auth] No userId found in session')
       // Debug: log toàn bộ cookie để xem có gì
@@ -76,20 +76,20 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
     let roleFromMetadata: UserRole | undefined = undefined
     let retryCount = 0
     const maxRetries = 2
-    
+
     while (retryCount <= maxRetries && !roleFromMetadata) {
       try {
         const client = await clerkClient()
         const user = await client.users.getUser(userId)
-        
+
         // Đọc role từ publicMetadata (được set qua syncRoleToClerk)
         roleFromMetadata = user.publicMetadata?.role as UserRole | undefined
-        
+
         console.log(`[API Auth] Role from Clerk user metadata (attempt ${retryCount + 1}): ${roleFromMetadata || 'not found'}`)
-        
+
         if (roleFromMetadata && ['customer', 'staff', 'admin'].includes(roleFromMetadata)) {
           console.log(`[API Auth] Using role from Clerk metadata: ${roleFromMetadata}`)
-          
+
           let userIdInDb: string | undefined
           if (roleFromMetadata === 'admin') {
             // Admin không có record trong database, dùng Clerk ID
@@ -105,7 +105,7 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
               console.warn('[API Auth] Could not fetch user ID from database:', dbError)
             }
           }
-          
+
           return {
             isAuthenticated: true,
             userId,
@@ -132,7 +132,7 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
     // QUAN TRỌNG: Vì middleware đã verify role từ JWT token, nếu user đã pass middleware
     // thì có thể trust userId và check admin trước
     console.log(`[API Auth] No role in Clerk metadata, falling back to database check...`)
-    
+
     // Nếu có ADMIN_CLERK_ID và userId khớp, trust là admin (vì middleware đã verify)
     const adminClerkId = process.env.ADMIN_CLERK_ID
     if (adminClerkId && userId === adminClerkId) {
@@ -144,17 +144,17 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
         userIdInDb: adminClerkId
       }
     }
-    
+
     // Nếu không có ADMIN_CLERK_ID, check database nhưng ưu tiên admin
     // Vì middleware đã verify role từ JWT, nếu request đến từ admin route thì user là admin
     // Nhưng để chắc chắn, check database với logic ưu tiên admin
     console.log(`[API Auth] Checking database with admin priority...`)
-    
+
     try {
       await connectToDatabase()
       const Staff = (await import('@/database/staff.model')).default
       const Customer = (await import('@/database/customer.model')).default
-      
+
       // Check Staff trước (admin có thể không có trong database, nhưng staff thì có)
       const staff = await Staff.findOne({ clerkId: userId }).select('_id')
       if (staff) {
@@ -166,7 +166,7 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
           userIdInDb: staff._id.toString()
         }
       }
-      
+
       // Check Customer (nhưng admin có thể cũng có trong đây do auto-create)
       const customer = await Customer.findOne({ clerkId: userId }).select('_id')
       if (customer) {
@@ -175,7 +175,7 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
         // → Trust middleware: user là admin
         const referer = req.headers.referer || ''
         const isFromAdminRoute = referer.includes('/admin/')
-        
+
         if (isFromAdminRoute) {
           console.log(`[API Auth] User ${userId} found in Customer collection, but request from admin route (middleware verified) - trusting middleware as admin`)
           return {
@@ -185,24 +185,30 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
             userIdInDb: process.env.ADMIN_CLERK_ID || userId
           }
         }
-        
+
         // Nếu không phải từ admin route, thì là customer thật
-        console.log(`[API Auth] User ${userId} found in Customer collection as customer`)
+        const customerId = customer._id?.toString() || customer._id
+        if (!customerId) {
+          console.error(`[API Auth] Customer found but _id is missing for user ${userId}`)
+          return null
+        }
+
+        console.log(`[API Auth] User ${userId} found in Customer collection as customer with ID: ${customerId}`)
         return {
           isAuthenticated: true,
           userId,
           role: 'customer',
-          userIdInDb: customer._id.toString()
+          userIdInDb: customerId
         }
       }
     } catch (dbError) {
       console.warn('[API Auth] Database check error:', dbError)
     }
-    
+
     // Nếu không tìm thấy trong database, check xem request có đến từ admin route không
     const referer = req.headers.referer || ''
     const isFromAdminRoute = referer.includes('/admin/')
-    
+
     if (isFromAdminRoute) {
       // Request đến từ admin route → middleware đã verify role "admin"
       console.log(`[API Auth] User ${userId} not found in database, but request from admin route (middleware verified) - trusting as admin`)
@@ -213,7 +219,7 @@ export async function getAuthUser(req: NextApiRequest): Promise<ApiAuthResult | 
         userIdInDb: process.env.ADMIN_CLERK_ID || userId
       }
     }
-    
+
     // Nếu không phải từ admin route và không tìm thấy trong database
     console.log(`[API Auth] User ${userId} not found in database and not from admin route`)
     return null
@@ -231,7 +237,7 @@ export function withAuth(
 ) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     const authResult = await getAuthUser(req)
-    
+
     if (!authResult || !authResult.isAuthenticated) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
@@ -249,17 +255,17 @@ export function withRole(
 ) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     const authResult = await getAuthUser(req)
-    
+
     if (!authResult || !authResult.isAuthenticated) {
       console.log('[API Auth] Unauthorized - no auth result')
       return res.status(401).json({ error: 'Unauthorized' })
     }
 
     const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
-    
+
     if (!roles.includes(authResult.role)) {
       console.log(`[API Auth] Forbidden - User role: ${authResult.role}, Required: ${roles.join(', ')}`)
-      return res.status(403).json({ 
+      return res.status(403).json({
         error: 'Forbidden - Insufficient permissions',
         userRole: authResult.role,
         requiredRole: roles
