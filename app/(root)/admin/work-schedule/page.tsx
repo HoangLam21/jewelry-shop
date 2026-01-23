@@ -10,7 +10,7 @@ import CreateScheduleForm from "@/components/form/schedule/CreateScheduleForm";
 import UpdateScheduleForm from "@/components/form/schedule/UpdateScheduleForm";
 import * as XLSX from "xlsx";
 import { CalendarDays } from "lucide-react";
-import { today, getLocalTimeZone } from "@internationalized/date";
+import { now, today, getLocalTimeZone } from "@internationalized/date";
 
 const Page = () => {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
@@ -158,7 +158,7 @@ const Page = () => {
                 color="primary"
                 calendarWidth={300}
                 weekdayStyle="narrow"
-                defaultValue={today(getLocalTimeZone())}
+                defaultValue={today(getLocalTimeZone()) as any}
                 classNames={{
                   base: "rounded-lg",
                 }}
