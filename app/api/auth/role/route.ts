@@ -29,7 +29,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ role: roleResult.role })
+    return NextResponse.json({ 
+      role: roleResult.role,
+      userIdInDb: roleResult.userId // Trả về userIdInDb (staff ID hoặc customer ID)
+    })
   } catch (error) {
     console.error('Error fetching role:', error)
     return NextResponse.json(

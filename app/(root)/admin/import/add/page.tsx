@@ -14,6 +14,10 @@ import { CreateImport } from "@/dto/ImportDTO";
 import { fetchProduct } from "@/lib/service/product.service";
 import { createImport } from "@/lib/service/import.service";
 import { verifyImport } from "@/lib/actions/import.action";
+import { useUser } from "@clerk/nextjs";
+import InputSelection from "@/components/shared/input/InputSelection";
+import { fetchStaff } from "@/lib/service/staff.service";
+import { fetchProvider } from "@/lib/service/provider.service";
 import {
   Package,
   Calendar,
@@ -42,18 +46,120 @@ export interface Product {
 }
 
 const AddImport = () => {
+  const { user, isLoaded } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
   const [list, setList] = useState<Product[]>([]);
   const [selectedItem, setSelectedItem] = useState<Product | null>(null);
   const [isProductOverlayOpen, setIsProductOverlayOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [staffId, setStaffId] = useState<string>("");
+  const [staffList, setStaffList] = useState<{ id: string; name: string }[]>([]);
+  const [userRole, setUserRole] = useState<string>("");
+  const [loadingStaff, setLoadingStaff] = useState(false);
+  const [providerList, setProviderList] = useState<{ id: string; name: string }[]>([]);
+  const [loadingProvider, setLoadingProvider] = useState(false);
 
   const [item, setItem] = useState<CreateImport>({
     details: [],
     provider: "",
-    staff: "6776bdd574de08ccc866a4b8",
+    staff: "", // Staff ID sẽ được tự động set bởi API từ user đang đăng nhập
   });
+
+  // Fetch staff ID from auth and staff list for admin
+  useEffect(() => {
+    const fetchStaffId = async () => {
+      console.log("[AddImport Page] useEffect triggered - isLoaded:", isLoaded, "user:", user?.id);
+
+      if (!isLoaded) {
+        return;
+      }
+
+      if (!user?.id) {
+        return;
+      }
+
+      // Ưu tiên lấy role từ publicMetadata (nhanh nhất)
+      let role = user.publicMetadata?.role as string | undefined;
+      console.log("[AddImport Page] Role from metadata:", role);
+
+      if (role && (role === "admin" || role === "staff" || role === "customer")) {
+        setUserRole(role);
+        console.log("[AddImport Page] Set userRole from metadata:", role);
+
+        // Nếu là admin, fetch staff list NGAY LẬP TỨC
+        if (role === "admin") {
+          console.log("[AddImport Page] Admin detected, fetching staff list...");
+          setLoadingStaff(true);
+          try {
+            const staffs = await fetchStaff();
+            console.log("[AddImport Page] Fetched staffs:", staffs);
+            if (staffs && Array.isArray(staffs) && staffs.length > 0) {
+              const formattedStaffs = staffs.map((staff: any) => ({
+                id: staff._id,
+                name: `${staff.fullName} (${staff.email})`,
+              }));
+              console.log("[AddImport Page] Formatted staffs:", formattedStaffs.length, "items");
+              setStaffList(formattedStaffs);
+            }
+          } catch (error) {
+            console.error("[AddImport Page] Error fetching staff list:", error);
+          } finally {
+            setLoadingStaff(false);
+          }
+        }
+      }
+
+      try {
+        // Fetch role và userIdInDb từ API
+        const response = await fetch(`/api/auth/role?userId=${user.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (!role && data.role) {
+            role = data.role;
+            setUserRole(data.role);
+          }
+
+          if (role === "staff" && data.userIdInDb) {
+            setStaffId(data.userIdInDb);
+            setItem((prev) => ({
+              ...prev,
+              staff: data.userIdInDb,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("[AddImport Page] Error fetching role:", error);
+      }
+    };
+
+    fetchStaffId();
+  }, [user, isLoaded]);
+
+  // Fetch provider list
+  useEffect(() => {
+    const fetchProviders = async () => {
+      setLoadingProvider(true);
+      try {
+        const providers = await fetchProvider();
+        console.log("[AddImport Page] Fetched providers:", providers);
+        if (providers && Array.isArray(providers)) {
+          const formattedProviders = providers.map((provider: any) => ({
+            id: provider._id,
+            name: `${provider.name} (${provider.contact || provider.address || ""})`,
+          }));
+          console.log("[AddImport Page] Formatted providers:", formattedProviders.length, "items");
+          setProviderList(formattedProviders);
+        }
+      } catch (error) {
+        console.error("[AddImport Page] Error fetching providers:", error);
+      } finally {
+        setLoadingProvider(false);
+      }
+    };
+
+    fetchProviders();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -151,6 +257,12 @@ const AddImport = () => {
   };
 
   const handleSave = async () => {
+    // Validate staff ID cho admin
+    if ((userRole === "admin" || user?.publicMetadata?.role === "admin") && !item.staff) {
+      alert("Please select a staff member");
+      return;
+    }
+
     if (!item.provider) {
       alert("Please enter Provider ID");
       return;
@@ -175,11 +287,11 @@ const AddImport = () => {
 
       if (result) {
         alert("Import order created successfully!");
-        // Reset form
+        // Reset form (giữ staff ID nếu đã fetch được)
         setItem({
           details: [],
           provider: "",
-          staff: "6776bdd574de08ccc866a4b8",
+          staff: staffId, // Sử dụng staff ID đã fetch từ auth
         });
       }
     } catch (error) {
@@ -243,7 +355,7 @@ const AddImport = () => {
       </div>
 
       {/* Supplier Information */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-visible">
         <div className="bg-gray-50 dark:bg-gray-900/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -254,15 +366,67 @@ const AddImport = () => {
           </div>
         </div>
 
-        <div className="p-6">
-          <InputEdit
-            titleInput="Provider ID"
-            width="w-full"
-            name="provider"
-            onChange={handleChange}
-            placeholder="Enter provider ID (required)"
-            value={item?.provider ?? ""}
-          />
+        <div className="p-6 space-y-4">
+          {/* Staff Selection - chỉ hiển thị cho admin, đặt TRƯỚC Provider ID */}
+          {(userRole === "admin" || user?.publicMetadata?.role === "admin") && (
+            <div>
+              {loadingStaff ? (
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 py-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  <span className="text-sm">Loading staff list...</span>
+                </div>
+              ) : staffList.length > 0 ? (
+                <InputSelection
+                  width="w-full"
+                  titleInput="Staff"
+                  options={staffList.map((staff) => ({
+                    name: staff.name,
+                    value: staff.id,
+                  }))}
+                  value={item?.staff ?? ""}
+                  onChange={(value) => {
+                    console.log("[AddImport Page] Staff selected:", value);
+                    setItem((prev) => ({
+                      ...prev,
+                      staff: value,
+                    }));
+                  }}
+                />
+              ) : (
+                <div className="text-yellow-600 dark:text-yellow-400 text-sm py-2 border border-yellow-300 dark:border-yellow-700 rounded-lg px-3 bg-yellow-50 dark:bg-yellow-900/20">
+                  ⚠️ No staff found. Please contact administrator.
+                </div>
+              )}
+            </div>
+          )}
+
+          {loadingProvider ? (
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 py-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <span className="text-sm">Loading providers...</span>
+            </div>
+          ) : providerList.length > 0 ? (
+            <InputSelection
+              width="w-full"
+              titleInput="Provider"
+              options={providerList.map((provider) => ({
+                name: provider.name,
+                value: provider.id,
+              }))}
+              value={item?.provider ?? ""}
+              onChange={(value) => {
+                console.log("[AddImport Page] Provider selected:", value);
+                setItem((prev) => ({
+                  ...prev,
+                  provider: value,
+                }));
+              }}
+            />
+          ) : (
+            <div className="text-yellow-600 dark:text-yellow-400 text-sm py-2 border border-yellow-300 dark:border-yellow-700 rounded-lg px-3 bg-yellow-50 dark:bg-yellow-900/20">
+              ⚠️ No providers found. Please contact administrator.
+            </div>
+          )}
         </div>
       </div>
 

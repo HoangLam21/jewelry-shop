@@ -127,8 +127,18 @@ async function handler(
     const point = getFieldValue(fields.point);
     const content = getFieldValue(fields.content);
 
+    console.log("[Rating Create API] Received fields:", { userId, productId, point, content: content?.substring(0, 50) });
+
+    // Validate required fields
     if (!userId || !productId || !point || !content) {
+      console.error("[Rating Create API] Missing required fields:", { userId: !!userId, productId: !!productId, point: !!point, content: !!content });
       return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Validate productId is not "undefined" string
+    if (productId === "undefined" || productId.trim() === "") {
+      console.error("[Rating Create API] Invalid productId:", productId);
+      return res.status(400).json({ error: "Invalid product ID" });
     }
 
     const images = files.images

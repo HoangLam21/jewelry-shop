@@ -13,6 +13,16 @@ export const createRating = async (data: {
   images?: formidable.File[];
 }) => {
   try {
+    // Validate required fields
+    if (!data.productId || data.productId.trim() === "" || data.productId === "undefined") {
+      console.error("[createRating] Invalid productId:", data.productId);
+      throw new Error("Product ID is required and must be valid");
+    }
+    if (!data.userId || data.userId.trim() === "" || data.userId === "undefined") {
+      console.error("[createRating] Invalid userId:", data.userId);
+      throw new Error("User ID is required and must be valid");
+    }
+
     await connectToDatabase();
     const imageIds = [];
     const imageUrls = [];
@@ -23,6 +33,14 @@ export const createRating = async (data: {
         imageUrls.push(createdImage.url);
       }
     }
+    
+    console.log("[createRating] Creating rating with:", { 
+      userId: data.userId, 
+      productId: data.productId, 
+      point: data.point,
+      hasImages: !!data.images && data.images.length > 0
+    });
+    
     const newRating = await Rating.create({
       ...data,
       images: imageIds,
@@ -61,8 +79,22 @@ export const getRatingsByProductId = async (productId: string) => {
     const ratings = await Rating.find({ productId }).populate("images");
     const ratingReponse = [];
     for (const rating of ratings) {
-      const customer = await Customer.findById(rating.userId);
-      ratingReponse.push({ ...rating.toObject(), userId: customer });
+      // Populate customer với select để đảm bảo có fullName
+      const customer = await Customer.findById(rating.userId).select("fullName avatar email phoneNumber");
+      if (customer) {
+        ratingReponse.push({ ...rating.toObject(), userId: customer });
+      } else {
+        // Nếu không tìm thấy customer, vẫn trả về rating nhưng với userId null
+        console.warn(`[getRatingsByProductId] Customer not found for userId: ${rating.userId}`);
+        ratingReponse.push({ 
+          ...rating.toObject(), 
+          userId: { 
+            _id: rating.userId, 
+            fullName: "Unknown User", 
+            avatar: "/assets/images/avatar.jpg" 
+          } 
+        });
+      }
     }
     return ratingReponse;
   } catch (error) {

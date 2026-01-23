@@ -11,6 +11,7 @@ import { getProductBySlug } from "@/lib/services/product.service";
 import { useCart } from "@/contexts/CartContext";
 import { useBuyNow } from "@/contexts/BuyNowContext";
 import { X, Minus, Plus } from "lucide-react";
+import { getReviewById, calculateRatingStats } from "@/lib/services/rating.service";
 
 interface Variant {
   material: string;
@@ -65,7 +66,19 @@ const Page = () => {
       try {
         const data = await getProductBySlug(slug);
         setProduct(data);
-        // Có thể fetch reviews ở đây nếu cần
+
+        // Fetch reviews để tính ratingStats
+        if (data?._id) {
+          try {
+            const reviews = await getReviewById(data._id);
+            const stats = calculateRatingStats(reviews);
+            setRatingStats(stats);
+            console.log("[Product Page] Rating stats calculated:", stats);
+          } catch (reviewError) {
+            console.error("Error fetching reviews:", reviewError);
+            // Giữ nguyên giá trị mặc định nếu không fetch được reviews
+          }
+        }
       } catch (error) {
         console.error("Error fetching product:", error);
       }
@@ -176,11 +189,10 @@ const Page = () => {
                 {[...Array(5)].map((_, i) => (
                   <span
                     key={i}
-                    className={`text-xl ${
-                      i < Math.floor(ratingStats.averageRating)
+                    className={`text-xl ${i < Math.floor(ratingStats.averageRating)
                         ? "text-yellow-400"
                         : "text-gray-300"
-                    }`}
+                      }`}
                   >
                     ★
                   </span>
@@ -287,11 +299,10 @@ const Page = () => {
                 {availableVariants.map((variant: Variant) => (
                   <button
                     key={variant.material}
-                    className={`px-5 py-2.5 rounded-lg font-medium transition-all ${
-                      selectedMaterial === variant.material
+                    className={`px-5 py-2.5 rounded-lg font-medium transition-all ${selectedMaterial === variant.material
                         ? "bg-primary-100 text-white shadow-lg scale-105"
                         : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
-                    }`}
+                      }`}
                     onClick={() => {
                       setSelectedMaterial(variant.material);
                       setSelectedSize("");
@@ -313,11 +324,10 @@ const Page = () => {
                     .map((size: Size) => (
                       <button
                         key={size._id}
-                        className={`px-5 py-2.5 rounded-lg font-medium transition-all ${
-                          selectedSize === size.size
+                        className={`px-5 py-2.5 rounded-lg font-medium transition-all ${selectedSize === size.size
                             ? "bg-primary-100 text-white shadow-lg scale-105"
                             : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
-                        }`}
+                          }`}
                         onClick={() => setSelectedSize(size.size)}
                       >
                         {size.size}
@@ -375,11 +385,10 @@ const Page = () => {
                 {availableVariants.map((variant: Variant) => (
                   <button
                     key={variant.material}
-                    className={`px-5 py-2.5 rounded-lg font-medium transition-all ${
-                      selectedMaterial === variant.material
+                    className={`px-5 py-2.5 rounded-lg font-medium transition-all ${selectedMaterial === variant.material
                         ? "bg-primary-100 text-white shadow-lg scale-105"
                         : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
-                    }`}
+                      }`}
                     onClick={() => {
                       setSelectedMaterial(variant.material);
                       setSelectedSize("");
@@ -402,11 +411,10 @@ const Page = () => {
                       .map((size: Size) => (
                         <button
                           key={size._id}
-                          className={`px-5 py-2.5 rounded-lg font-medium transition-all ${
-                            selectedSize === size.size
+                          className={`px-5 py-2.5 rounded-lg font-medium transition-all ${selectedSize === size.size
                               ? "bg-primary-100 text-white shadow-lg scale-105"
                               : "bg-gray-200 dark:bg-gray-800 text-dark100_light500 hover:bg-gray-300 dark:hover:bg-gray-700"
-                          }`}
+                            }`}
                           onClick={() => setSelectedSize(size.size)}
                         >
                           {size.size}
